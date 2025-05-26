@@ -22,6 +22,7 @@ import { TerminalRegistry } from "./integrations/terminal/TerminalRegistry"
 import { McpServerManager } from "./services/mcp/McpServerManager"
 import { telemetryService } from "./services/telemetry/TelemetryService"
 import { API } from "./exports/api"
+import { HttpApiServer } from "./exports/http-server"
 import { migrateSettings } from "./utils/migrateSettings"
 import { formatLanguage } from "./shared/language"
 import { CodeIndexManager } from "./services/code-index/manager"
@@ -160,8 +161,20 @@ export async function activate(context: vscode.ExtensionContext) {
 
 		context.subscriptions.push(watcher)
 	}
+	const api = new API(outputChannel, provider, socketPath, enableLogging)
+	// Initialize the HTTP API server
+	const httpServer = new HttpApiServer(api, 6001)
+	context.subscriptions.push({
+		dispose: async () => {
+			await httpServer.stop()
+		},
+	})
 
-	return new API(outputChannel, provider, socketPath, enableLogging)
+	// Start the server
+	httpServer.start().catch((error) => {
+		console.error("Failed to start HTTP API server:", error)
+	})
+	return api
 }
 
 // This method is called when your extension is deactivated.

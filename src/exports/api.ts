@@ -193,6 +193,69 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 		return this.sidebarProvider.viewLaunched
 	}
 
+	public getStatus() {
+		// Check if there are any tasks in the taskMap
+		if (this.taskMap.size === 0) {
+			return "IDLE"
+		}
+
+		// Get the current task provider
+		const taskId = this.getCurrentTaskStack()[0]
+		if (!taskId) {
+			return "IDLE"
+		}
+
+		const provider = this.taskMap.get(taskId)
+		if (!provider) {
+			return "IDLE"
+		}
+
+		// Get the current Cline instance
+		const cline = provider.getCurrentCline()
+		if (!cline) {
+			return "IDLE"
+		}
+
+		// Check if the task is paused
+		if (cline.isPaused) {
+			return "PAUSED"
+		}
+
+		// Check if the task is waiting for user input
+		// Get the last message from the Cline instance
+		const clineMessages = cline.clineMessages
+		if (!clineMessages || clineMessages.length === 0) {
+			return "RUNNING" // No messages yet, task is still initializing
+		}
+
+		const lastMessage = clineMessages[clineMessages.length - 1]
+
+		// Check if the last message is an "ask" type
+		if (lastMessage && lastMessage.type === "ask") {
+			// Some ask types indicate the task is waiting for user input
+			// but others are part of the normal workflow
+			const askType = lastMessage.ask
+
+			// These ask types indicate the task is waiting for user input
+			const waitingForInputTypes: string[] = [
+				"followup",
+				"completion_result",
+				"resume_task",
+				"resume_completed_task",
+				"mistake_limit_reached",
+				"tool_approval", // Add tool approval as a waiting for input state
+			]
+
+			// If the ask type is in the waitingForInputTypes list,
+			// the task is waiting for user input
+			if (askType && waitingForInputTypes.includes(askType)) {
+				return "WAITING_FOR_INPUT"
+			}
+		}
+
+		return "RUNNING"
+	}
+
 	private registerListeners(provider: ClineProvider) {
 		provider.on("clineCreated", (cline) => {
 			cline.on("taskStarted", async () => {
