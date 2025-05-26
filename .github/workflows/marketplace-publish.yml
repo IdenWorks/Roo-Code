@@ -1,7 +1,7 @@
 name: Publish Extension
 on:
-  pull_request:
-    types: [closed, labeled]
+  push:
+    branches: [main]
   workflow_dispatch:
 
 env:
@@ -15,9 +15,7 @@ jobs:
     permissions:
       contents: write # Required for pushing tags.
     if: >
-        ( github.event_name == 'pull_request' &&
-        github.event.pull_request.base.ref == 'main' &&
-        github.event.label.name == 'publish' )
+        ( github.event_name == 'push' && github.ref == 'refs/heads/main' ) 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
