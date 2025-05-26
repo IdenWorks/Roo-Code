@@ -163,7 +163,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	}
 	const api = new API(outputChannel, provider, socketPath, enableLogging)
 	// Initialize the HTTP API server
-	const httpServer = new HttpApiServer(api, 6001)
+	const httpServer = new HttpApiServer(api)
 	context.subscriptions.push({
 		dispose: async () => {
 			await httpServer.stop()
