@@ -24,6 +24,7 @@
 		"providers": "提供商",
 		"autoApprove": "自动批准",
 		"browser": "计算机交互",
+		"git": "Git",
 		"checkpoints": "存档点",
 		"notifications": "通知",
 		"contextManagement": "上下文",

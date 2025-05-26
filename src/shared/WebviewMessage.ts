@@ -141,6 +141,12 @@ export interface WebviewMessage {
 		| "indexingStatusUpdate"
 		| "indexCleared"
 		| "codebaseIndexConfig"
+		| "gitAutoCommitEnabled"
+		| "gitCommitMessageTemplate"
+		| "gitPrTitleTemplate"
+		| "gitPrBodyTemplate"
+		| "gitBranchPrefix"
+		| "gitRequireCleanWorkingDirectory"
 	text?: string
 	disabled?: boolean
 	askResponse?: ClineAskResponse

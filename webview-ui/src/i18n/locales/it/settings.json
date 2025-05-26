@@ -24,6 +24,7 @@
 		"providers": "Fornitori",
 		"autoApprove": "Auto-approvazione",
 		"browser": "Accesso computer",
+		"git": "Git",
 		"checkpoints": "Punti di controllo",
 		"notifications": "Notifiche",
 		"contextManagement": "Contesto",

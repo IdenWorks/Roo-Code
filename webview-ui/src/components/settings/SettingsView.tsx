@@ -15,6 +15,7 @@ import {
 	SquareMousePointer,
 	Webhook,
 	GitBranch,
+	GitPullRequest,
 	Bell,
 	Database,
 	SquareTerminal,
@@ -54,6 +55,7 @@ import ApiConfigManager from "./ApiConfigManager"
 import ApiOptions from "./ApiOptions"
 import { AutoApproveSettings } from "./AutoApproveSettings"
 import { BrowserSettings } from "./BrowserSettings"
+import { GitSettings } from "./GitSettings"
 import { CheckpointSettings } from "./CheckpointSettings"
 import { NotificationSettings } from "./NotificationSettings"
 import { ContextManagementSettings } from "./ContextManagementSettings"
@@ -79,6 +81,7 @@ const sectionNames = [
 	"providers",
 	"autoApprove",
 	"browser",
+	"git",
 	"checkpoints",
 	"notifications",
 	"contextManagement",
@@ -165,6 +168,12 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		customCondensingPrompt,
 		codebaseIndexConfig,
 		codebaseIndexModels,
+		gitAutoCommitEnabled,
+		gitCommitMessageTemplate,
+		gitPrTitleTemplate,
+		gitPrBodyTemplate,
+		gitBranchPrefix,
+		gitRequireCleanWorkingDirectory,
 	} = cachedState
 
 	const apiConfiguration = useMemo(() => cachedState.apiConfiguration ?? {}, [cachedState.apiConfiguration])
@@ -293,6 +302,13 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			vscode.postMessage({ type: "upsertApiConfiguration", text: currentApiConfigName, apiConfiguration })
 			vscode.postMessage({ type: "telemetrySetting", text: telemetrySetting })
 			vscode.postMessage({ type: "codebaseIndexConfig", values: codebaseIndexConfig })
+			// Git auto-commit settings
+			vscode.postMessage({ type: "gitAutoCommitEnabled", bool: gitAutoCommitEnabled })
+			vscode.postMessage({ type: "gitCommitMessageTemplate", text: gitCommitMessageTemplate })
+			vscode.postMessage({ type: "gitPrTitleTemplate", text: gitPrTitleTemplate })
+			vscode.postMessage({ type: "gitPrBodyTemplate", text: gitPrBodyTemplate })
+			vscode.postMessage({ type: "gitBranchPrefix", text: gitBranchPrefix })
+			vscode.postMessage({ type: "gitRequireCleanWorkingDirectory", bool: gitRequireCleanWorkingDirectory })
 			setChangeDetected(false)
 		}
 	}
@@ -365,6 +381,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			{ id: "providers", icon: Webhook },
 			{ id: "autoApprove", icon: CheckCheck },
 			{ id: "browser", icon: SquareMousePointer },
+			{ id: "git", icon: GitPullRequest },
 			{ id: "checkpoints", icon: GitBranch },
 			{ id: "notifications", icon: Bell },
 			{ id: "contextManagement", icon: Database },
@@ -584,6 +601,19 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 							screenshotQuality={screenshotQuality}
 							remoteBrowserHost={remoteBrowserHost}
 							remoteBrowserEnabled={remoteBrowserEnabled}
+							setCachedStateField={setCachedStateField}
+						/>
+					)}
+
+					{/* Git Section */}
+					{activeTab === "git" && (
+						<GitSettings
+							gitAutoCommitEnabled={gitAutoCommitEnabled}
+							gitCommitMessageTemplate={gitCommitMessageTemplate}
+							gitPrTitleTemplate={gitPrTitleTemplate}
+							gitPrBodyTemplate={gitPrBodyTemplate}
+							gitBranchPrefix={gitBranchPrefix}
+							gitRequireCleanWorkingDirectory={gitRequireCleanWorkingDirectory}
 							setCachedStateField={setCachedStateField}
 						/>
 					)}

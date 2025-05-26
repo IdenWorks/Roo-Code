@@ -14,6 +14,103 @@ import {
 import { formatResponse } from "../prompts/responses"
 import { telemetryService } from "../../services/telemetry/TelemetryService"
 import { type ExecuteCommandOptions, executeCommand } from "./executeCommandTool"
+import { GitService, GitServiceError } from "../../services/git"
+
+/**
+ * Handle git auto-commit and PR creation after task completion
+ */
+async function handleGitAutoCommit(cline: Task, result: string): Promise<string> {
+	try {
+		// Get settings from provider
+		const provider = cline.providerRef.deref()
+		if (!provider) {
+			return result
+		}
+
+		const state = await provider.getState()
+		if (!state) {
+			return result
+		}
+
+		// Type assertion to access git settings (they exist in schema but may not be in types yet)
+		const stateWithGit = state as any
+
+		// Check if git auto-commit is enabled
+		const gitAutoCommitEnabled = stateWithGit.gitAutoCommitEnabled
+		if (!gitAutoCommitEnabled) {
+			return result
+		}
+
+		const gitService = new GitService()
+
+		// Check prerequisites first
+		const prereqCheck = await gitService.checkPrerequisites()
+		if (!prereqCheck.success) {
+			return result
+		}
+
+		// Check git status
+		const gitStatus = await gitService.getGitStatus()
+		if (!gitStatus.isGitRepository) {
+			return result
+		}
+
+		// Check if there are changes to commit
+		const changesSummary = await gitService.analyzeChanges()
+		if (!changesSummary) {
+			return result
+		}
+
+		// Prepare commit and PR options
+		const commitOptions = {
+			taskId: cline.taskId,
+			taskDescription: result.substring(0, 100), // Truncate for commit message
+			branchPrefix: stateWithGit.gitBranchPrefix,
+			commitMessageTemplate: stateWithGit.gitCommitMessageTemplate,
+			requireCleanWorkingDirectory: stateWithGit.gitRequireCleanWorkingDirectory,
+		}
+
+		const prOptions = {
+			taskId: cline.taskId,
+			taskDescription: result.substring(0, 100),
+			prTitleTemplate: stateWithGit.gitPrTitleTemplate,
+			prBodyTemplate: stateWithGit.gitPrBodyTemplate,
+		}
+
+		// Execute git workflow
+		const gitResult = await gitService.commitAndCreatePR(commitOptions, prOptions)
+
+		if (gitResult.success) {
+			// Update result with git information
+			let updatedResult = result
+
+			if (gitResult.commitHash) {
+				updatedResult += `\n\n**Git Commit:** ${gitResult.commitHash.substring(0, 8)}`
+			}
+
+			if (gitResult.branchName) {
+				updatedResult += `\n**Branch:** ${gitResult.branchName}`
+			}
+
+			if (gitResult.prUrl) {
+				updatedResult += `\n**Pull Request:** ${gitResult.prUrl}`
+			}
+
+			return updatedResult
+		} else {
+			// Log error but don't fail the task
+			if (gitResult.commitHash) {
+				return result + `\n\n**Git Commit:** ${gitResult.commitHash.substring(0, 8)} (PR creation failed)`
+			}
+			return result
+		}
+	} catch (error) {
+		// Log error but don't fail the task
+		// Consider if specific error handling for GitServiceError is still needed or if a generic approach is fine.
+		// For now, just returning result to maintain original behavior of not failing the task.
+		return result
+	}
+}
 
 export async function attemptCompletionTool(
 	cline: Task,
@@ -70,7 +167,9 @@ export async function attemptCompletionTool(
 			if (command) {
 				if (lastMessage && lastMessage.ask !== "command") {
 					// Haven't sent a command message yet so first send completion_result then command.
-					await cline.say("completion_result", result, undefined, false)
+					// Handle git auto-commit before saying completion result
+					const finalResult = await handleGitAutoCommit(cline, result)
+					await cline.say("completion_result", finalResult, undefined, false)
 					telemetryService.captureTaskCompleted(cline.taskId)
 					cline.emit("taskCompleted", cline.taskId, cline.getTokenUsage(), cline.toolUsage)
 				}
@@ -95,7 +194,9 @@ export async function attemptCompletionTool(
 				// User didn't reject, but the command may have output.
 				commandResult = execCommandResult
 			} else {
-				await cline.say("completion_result", result, undefined, false)
+				// Handle git auto-commit before saying completion result
+				const finalResult = await handleGitAutoCommit(cline, result)
+				await cline.say("completion_result", finalResult, undefined, false)
 				telemetryService.captureTaskCompleted(cline.taskId)
 				cline.emit("taskCompleted", cline.taskId, cline.getTokenUsage(), cline.toolUsage)
 			}

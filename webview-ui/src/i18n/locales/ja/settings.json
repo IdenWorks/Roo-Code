@@ -24,6 +24,7 @@
 		"providers": "プロバイダー",
 		"autoApprove": "自動承認",
 		"browser": "コンピューターアクセス",
+		"git": "Git",
 		"checkpoints": "チェックポイント",
 		"notifications": "通知",
 		"contextManagement": "コンテキスト",

@@ -203,6 +203,12 @@ type GlobalSettings = {
 		| undefined
 	enhancementApiConfigId?: string | undefined
 	historyPreviewCollapsed?: boolean | undefined
+	gitAutoCommitEnabled?: boolean | undefined
+	gitCommitMessageTemplate?: string | undefined
+	gitPrTitleTemplate?: string | undefined
+	gitPrBodyTemplate?: string | undefined
+	gitBranchPrefix?: string | undefined
+	gitRequireCleanWorkingDirectory?: boolean | undefined
 }
 
 export type { GlobalSettings }
@@ -993,6 +999,12 @@ type IpcMessage =
 									| undefined
 								enhancementApiConfigId?: string | undefined
 								historyPreviewCollapsed?: boolean | undefined
+								gitAutoCommitEnabled?: boolean | undefined
+								gitCommitMessageTemplate?: string | undefined
+								gitPrTitleTemplate?: string | undefined
+								gitPrBodyTemplate?: string | undefined
+								gitBranchPrefix?: string | undefined
+								gitRequireCleanWorkingDirectory?: boolean | undefined
 							}
 							text: string
 							images?: string[] | undefined
@@ -1507,6 +1519,12 @@ type TaskCommand =
 						| undefined
 					enhancementApiConfigId?: string | undefined
 					historyPreviewCollapsed?: boolean | undefined
+					gitAutoCommitEnabled?: boolean | undefined
+					gitCommitMessageTemplate?: string | undefined
+					gitPrTitleTemplate?: string | undefined
+					gitPrBodyTemplate?: string | undefined
+					gitBranchPrefix?: string | undefined
+					gitRequireCleanWorkingDirectory?: boolean | undefined
 				}
 				text: string
 				images?: string[] | undefined

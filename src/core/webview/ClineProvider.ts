@@ -1265,6 +1265,12 @@ export class ClineProvider extends EventEmitter<ClineProviderEvents> implements 
 			customCondensingPrompt,
 			codebaseIndexConfig,
 			codebaseIndexModels,
+			gitAutoCommitEnabled,
+			gitCommitMessageTemplate,
+			gitPrTitleTemplate,
+			gitPrBodyTemplate,
+			gitBranchPrefix,
+			gitRequireCleanWorkingDirectory,
 		} = await this.getState()
 
 		const telemetryKey = process.env.POSTHOG_API_KEY
@@ -1365,6 +1371,13 @@ export class ClineProvider extends EventEmitter<ClineProviderEvents> implements 
 				codebaseIndexEmbedderBaseUrl: "",
 				codebaseIndexEmbedderModelId: "",
 			},
+			// Git auto-commit settings
+			gitAutoCommitEnabled: gitAutoCommitEnabled ?? false,
+			gitCommitMessageTemplate,
+			gitPrTitleTemplate,
+			gitPrBodyTemplate,
+			gitBranchPrefix,
+			gitRequireCleanWorkingDirectory: gitRequireCleanWorkingDirectory ?? false,
 		}
 	}
 
@@ -1467,6 +1480,13 @@ export class ClineProvider extends EventEmitter<ClineProviderEvents> implements 
 				codebaseIndexEmbedderBaseUrl: "",
 				codebaseIndexEmbedderModelId: "",
 			},
+			// Git auto-commit settings
+			gitAutoCommitEnabled: stateValues.gitAutoCommitEnabled ?? false,
+			gitCommitMessageTemplate: stateValues.gitCommitMessageTemplate,
+			gitPrTitleTemplate: stateValues.gitPrTitleTemplate,
+			gitPrBodyTemplate: stateValues.gitPrBodyTemplate,
+			gitBranchPrefix: stateValues.gitBranchPrefix,
+			gitRequireCleanWorkingDirectory: stateValues.gitRequireCleanWorkingDirectory ?? false,
 		}
 	}
 

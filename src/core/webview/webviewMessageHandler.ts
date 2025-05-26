@@ -1390,5 +1390,30 @@ export const webviewMessageHandler = async (provider: ClineProvider, message: We
 			}
 			break
 		}
+		// Git auto-commit settings handlers
+		case "gitAutoCommitEnabled":
+			await updateGlobalState("gitAutoCommitEnabled", message.bool ?? false)
+			await provider.postStateToWebview()
+			break
+		case "gitCommitMessageTemplate":
+			await updateGlobalState("gitCommitMessageTemplate", message.text)
+			await provider.postStateToWebview()
+			break
+		case "gitPrTitleTemplate":
+			await updateGlobalState("gitPrTitleTemplate", message.text)
+			await provider.postStateToWebview()
+			break
+		case "gitPrBodyTemplate":
+			await updateGlobalState("gitPrBodyTemplate", message.text)
+			await provider.postStateToWebview()
+			break
+		case "gitBranchPrefix":
+			await updateGlobalState("gitBranchPrefix", message.text)
+			await provider.postStateToWebview()
+			break
+		case "gitRequireCleanWorkingDirectory":
+			await updateGlobalState("gitRequireCleanWorkingDirectory", message.bool ?? false)
+			await provider.postStateToWebview()
+			break
 	}
 }

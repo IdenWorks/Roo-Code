@@ -104,6 +104,19 @@ export interface ExtensionStateContextType extends ExtensionState {
 	autoCondenseContextPercent: number
 	setAutoCondenseContextPercent: (value: number) => void
 	routerModels?: RouterModels
+	// Git auto-commit settings
+	gitAutoCommitEnabled?: boolean
+	setGitAutoCommitEnabled: (value: boolean) => void
+	gitCommitMessageTemplate?: string
+	setGitCommitMessageTemplate: (value: string) => void
+	gitPrTitleTemplate?: string
+	setGitPrTitleTemplate: (value: string) => void
+	gitPrBodyTemplate?: string
+	setGitPrBodyTemplate: (value: string) => void
+	gitBranchPrefix?: string
+	setGitBranchPrefix: (value: string) => void
+	gitRequireCleanWorkingDirectory?: boolean
+	setGitRequireCleanWorkingDirectory: (value: boolean) => void
 }
 
 export const ExtensionStateContext = createContext<ExtensionStateContextType | undefined>(undefined)
@@ -193,6 +206,13 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 			codebaseIndexEmbedderModelId: "",
 		},
 		codebaseIndexModels: { ollama: {}, openai: {} },
+		// Git auto-commit settings defaults
+		gitAutoCommitEnabled: false,
+		gitCommitMessageTemplate: undefined,
+		gitPrTitleTemplate: undefined,
+		gitPrBodyTemplate: undefined,
+		gitBranchPrefix: undefined,
+		gitRequireCleanWorkingDirectory: false,
 	})
 
 	const [didHydrateState, setDidHydrateState] = useState(false)
@@ -383,6 +403,15 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setCondensingApiConfigId: (value) => setState((prevState) => ({ ...prevState, condensingApiConfigId: value })),
 		setCustomCondensingPrompt: (value) =>
 			setState((prevState) => ({ ...prevState, customCondensingPrompt: value })),
+		// Git auto-commit setters
+		setGitAutoCommitEnabled: (value) => setState((prevState) => ({ ...prevState, gitAutoCommitEnabled: value })),
+		setGitCommitMessageTemplate: (value) =>
+			setState((prevState) => ({ ...prevState, gitCommitMessageTemplate: value })),
+		setGitPrTitleTemplate: (value) => setState((prevState) => ({ ...prevState, gitPrTitleTemplate: value })),
+		setGitPrBodyTemplate: (value) => setState((prevState) => ({ ...prevState, gitPrBodyTemplate: value })),
+		setGitBranchPrefix: (value) => setState((prevState) => ({ ...prevState, gitBranchPrefix: value })),
+		setGitRequireCleanWorkingDirectory: (value) =>
+			setState((prevState) => ({ ...prevState, gitRequireCleanWorkingDirectory: value })),
 	}
 
 	return <ExtensionStateContext.Provider value={contextValue}>{children}</ExtensionStateContext.Provider>

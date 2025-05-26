@@ -215,6 +215,14 @@ export type ExtensionState = Pick<
 	settingsImportedAt?: number
 	historyPreviewCollapsed?: boolean
 	autoCondenseContextPercent: number
+
+	// Git auto-commit settings
+	gitAutoCommitEnabled?: boolean
+	gitCommitMessageTemplate?: string
+	gitPrTitleTemplate?: string
+	gitPrBodyTemplate?: string
+	gitBranchPrefix?: string
+	gitRequireCleanWorkingDirectory?: boolean
 }
 
 export type { ClineMessage, ClineAsk, ClineSay }

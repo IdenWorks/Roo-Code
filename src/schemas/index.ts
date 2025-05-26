@@ -852,6 +852,14 @@ export const globalSettingsSchema = z.object({
 	customSupportPrompts: customSupportPromptsSchema.optional(),
 	enhancementApiConfigId: z.string().optional(),
 	historyPreviewCollapsed: z.boolean().optional(),
+
+	// Git auto-commit settings
+	gitAutoCommitEnabled: z.boolean().optional(),
+	gitCommitMessageTemplate: z.string().optional(),
+	gitPrTitleTemplate: z.string().optional(),
+	gitPrBodyTemplate: z.string().optional(),
+	gitBranchPrefix: z.string().optional(),
+	gitRequireCleanWorkingDirectory: z.boolean().optional(),
 })
 
 export type GlobalSettings = z.infer<typeof globalSettingsSchema>
@@ -938,6 +946,14 @@ const globalSettingsRecord: GlobalSettingsRecord = {
 	enhancementApiConfigId: undefined,
 	cachedChromeHostUrl: undefined,
 	historyPreviewCollapsed: undefined,
+
+	// Git auto-commit settings
+	gitAutoCommitEnabled: undefined, // Keep as undefined for optional boolean
+	gitCommitMessageTemplate: undefined,
+	gitPrTitleTemplate: undefined,
+	gitPrBodyTemplate: undefined,
+	gitBranchPrefix: undefined, // Could be "otto-task" but keeping undefined for now
+	gitRequireCleanWorkingDirectory: undefined, // Keep as undefined for optional boolean
 }
 
 export const GLOBAL_SETTINGS_KEYS = Object.keys(globalSettingsRecord) as Keys<GlobalSettings>[]
