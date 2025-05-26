@@ -39,7 +39,7 @@
 		{
 			"label": "watch:esbuild",
 			"type": "shell",
-			"command": "pnpm --filter roo-cline watch:esbuild",
+			"command": "pnpm --filter roo-otto watch:esbuild",
 			"group": "build",
 			"problemMatcher": {
 				"owner": "esbuild",
@@ -61,7 +61,7 @@
 		{
 			"label": "watch:tsc",
 			"type": "shell",
-			"command": "pnpm --filter roo-cline watch:tsc",
+			"command": "pnpm --filter roo-otto watch:tsc",
 			"group": "build",
 			"problemMatcher": "$tsc-watch",
 			"isBackground": true,
