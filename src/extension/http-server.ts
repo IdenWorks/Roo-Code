@@ -1,8 +1,8 @@
 import express from "express"
 import type { Express, Request, Response, NextFunction, ErrorRequestHandler } from "express"
 import cors from "cors"
-import { API } from "../exports/api"
-import { RooCodeSettings } from "../schemas"
+import { API } from "./api"
+import { RooCodeSettings } from "@roo-code/types"
 
 // Request body interfaces
 interface ClearTaskRequest {
