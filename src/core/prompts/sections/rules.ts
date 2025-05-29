@@ -44,6 +44,25 @@ function getEditingInstructions(diffStrategy?: DiffStrategy): string {
 	return instructions.join("\n")
 }
 
+function getGitWorkflowInstructions(): string {
+	return `- **GIT WORKFLOW REQUIREMENTS**: For all code-related tasks, you MUST follow proper git workflow:
+  * **Before Starting Task**: Always pull latest changes before beginning work:
+    - Pull latest changes: \`git pull\`
+  * **Initial Task Completion**: Before using attempt_completion, commit changes and create a PR:
+    - Check git status: \`git status\`
+    - Stage changes: \`git add .\`
+    - Commit with descriptive message: \`git commit -m "feat: [brief description]"\`
+    - Create and push to feature branch: \`git checkout -b otto/[task-name] && git push -u origin otto/[task-name]\`
+    - Create PR: \`gh pr create --title "[PR Title]" --body "[Description]"\` (if GitHub CLI available)
+  * **Subsequent Changes**: If user requests changes after PR creation:
+    - Make requested changes
+    - Commit: \`git add . && git commit -m "fix: [description of changes]"\`
+    - Push to existing branch: \`git push\`
+  * **Edge Cases**: Handle missing git repo (\`git init\`), missing remote, existing branches (\`git checkout [branch]\`), merge conflicts, and missing GitHub CLI
+  * **Branch Naming**: Use descriptive names like \`otto/feat/add-authentication\`, \`otto/fix/resolve-login-bug\`, \`otto/refactor/update-api\`
+  * **Commit Messages**: Use conventional format: \`type: description\` (feat, fix, docs, style, refactor, test, chore)`
+}
+
 export function getRulesSection(cwd: string, supportsComputerUse: boolean, diffStrategy?: DiffStrategy): string {
 	return `====
 
@@ -57,6 +76,7 @@ RULES
 - When using the search_files tool, craft your regex patterns carefully to balance specificity and flexibility. Based on the user's task you may use it to find code patterns, TODO comments, function definitions, or any text-based information across the project. The results include context, so analyze the surrounding code to better understand the matches. Leverage the search_files tool in combination with other tools for more comprehensive analysis. For example, use it to find specific code patterns, then use read_file to examine the full context of interesting matches before using ${diffStrategy ? "apply_diff or write_to_file" : "write_to_file"} to make informed changes.
 - When creating a new project (such as an app, website, or any software project), organize all new files within a dedicated project directory unless the user specifies otherwise. Use appropriate file paths when writing files, as the write_to_file tool will automatically create any necessary directories. Structure the project logically, adhering to best practices for the specific type of project being created. Unless otherwise specified, new projects should be easily run without additional setup, for example most projects can be built in HTML, CSS, and JavaScript - which you can open in a browser.
 ${getEditingInstructions(diffStrategy)}
+${getGitWorkflowInstructions()}
 - Some modes have restrictions on which files they can edit. If you attempt to edit a restricted file, the operation will be rejected with a FileRestrictionError that will specify which file patterns are allowed for the current mode.
 - Be sure to consider the type of project (e.g. Python, JavaScript, web application) when determining the appropriate structure and files to include. Also consider what files may be most relevant to accomplishing the task, for example looking at a project's manifest file would help you understand the project's dependencies, which you could incorporate into any code you write.
   * For example, in architect mode trying to edit app.js would be rejected because architect mode can only edit files matching "\\.md$"
