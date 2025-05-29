@@ -1,7 +1,8 @@
 import { z } from "zod"
 
-import { ProviderSettings } from "./api"
-import { Mode, PromptComponent, ModeConfig } from "./modes"
+import type { ProviderSettings, PromptComponent, ModeConfig } from "@roo-code/types"
+
+import { Mode } from "./modes"
 
 export type ClineAskResponse = "yesButtonClicked" | "noButtonClicked" | "messageResponse"
 
@@ -59,6 +60,7 @@ export interface WebviewMessage {
 		| "alwaysAllowModeSwitch"
 		| "allowedMaxRequests"
 		| "alwaysAllowSubtasks"
+		| "autoCondenseContext"
 		| "autoCondenseContextPercent"
 		| "condensingApiConfigId"
 		| "updateCondensingPrompt"
@@ -134,6 +136,9 @@ export interface WebviewMessage {
 		| "searchFiles"
 		| "toggleApiConfigPin"
 		| "setHistoryPreviewCollapsed"
+		| "accountButtonClicked"
+		| "rooCloudSignIn"
+		| "rooCloudSignOut"
 		| "condenseTaskContextRequest"
 		| "requestIndexingStatus"
 		| "startIndexing"
