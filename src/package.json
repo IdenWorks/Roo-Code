@@ -96,13 +96,13 @@
 				"icon": "$(link-external)"
 			},
 			{
-				"command": "roo-cline.accountButtonClicked",
+				"command": "roo-otto.accountButtonClicked",
 				"title": "Account",
 				"icon": "$(account)",
-				"when": "config.roo-cline.rooCodeCloudEnabled"
+				"when": "config.roo-otto.rooCodeCloudEnabled"
 			},
 			{
-				"command": "roo-cline.settingsButtonClicked",
+				"command": "roo-otto.settingsButtonClicked",
 				"title": "%command.settings.title%",
 				"icon": "$(settings-gear)"
 			},
@@ -235,14 +235,14 @@
 					"when": "view == roo-otto.SidebarProvider"
 				},
 				{
-					"command": "roo-cline.accountButtonClicked",
+					"command": "roo-otto.accountButtonClicked",
 					"group": "navigation@6",
-					"when": "view == roo-cline.SidebarProvider && config.roo-cline.rooCodeCloudEnabled"
+					"when": "view == roo-otto.SidebarProvider && config.roo-otto.rooCodeCloudEnabled"
 				},
 				{
-					"command": "roo-cline.settingsButtonClicked",
+					"command": "roo-otto.settingsButtonClicked",
 					"group": "navigation@7",
-					"when": "view == roo-cline.SidebarProvider"
+					"when": "view == roo-otto.SidebarProvider"
 				}
 			],
 			"editor/title": [
@@ -272,14 +272,14 @@
 					"when": "activeWebviewPanelId == roo-otto.TabPanelProvider"
 				},
 				{
-					"command": "roo-cline.accountButtonClicked",
+					"command": "roo-otto.accountButtonClicked",
 					"group": "navigation@6",
-					"when": "activeWebviewPanelId == roo-cline.TabPanelProvider && config.roo-cline.rooCodeCloudEnabled"
+					"when": "activeWebviewPanelId == roo-otto.TabPanelProvider && config.roo-otto.rooCodeCloudEnabled"
 				},
 				{
-					"command": "roo-cline.settingsButtonClicked",
+					"command": "roo-otto.settingsButtonClicked",
 					"group": "navigation@7",
-					"when": "activeWebviewPanelId == roo-cline.TabPanelProvider"
+					"when": "activeWebviewPanelId == roo-otto.TabPanelProvider"
 				}
 			]
 		},
@@ -325,7 +325,7 @@
 					"default": "",
 					"description": "%settings.customStoragePath.description%"
 				},
-				"roo-cline.rooCodeCloudEnabled": {
+				"roo-otto.rooCodeCloudEnabled": {
 					"type": "boolean",
 					"default": false,
 					"description": "%settings.rooCodeCloudEnabled.description%"
