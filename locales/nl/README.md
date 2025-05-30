@@ -12,26 +12,25 @@
 </div>
 <br>
 <div align="center">
-  <h1>Roo Code (voorheen Roo Cline)</h1>
-  <p align="center">
-  <img src="https://media.githubusercontent.com/media/RooCodeInc/Roo-Code/main/src/assets/docs/demo.gif" width="100%" />
-  </p>
-  <p align="center">
-  <img src="https://media.githubusercontent.com/media/RooCodeInc/Roo-Code/main/assets/docs/demo.gif" width="100%" />
-  </p>
+  <h2>Word lid van de Roo Code Community</h2>
   <p>Verbind met ontwikkelaars, draag ideeën bij en blijf op de hoogte met de nieuwste AI-gestuurde coderingstools.</p>
   
-  <a href="https://discord.gg/roocode" target="_blank"><img src="https://img.shields.io/badge/Join%20Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Join Discord"></a>
-  <a href="https://www.reddit.com/r/RooCode/" target="_blank"><img src="https://img.shields.io/badge/Join%20Reddit-FF4500?style=for-the-badge&logo=reddit&logoColor=white" alt="Join Reddit"></a>
+  <a href="https://discord.gg/roocode" target="_blank"><img src="https://img.shields.io/badge/Word%20lid%20van%20Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Word lid van Discord"></a>
+  <a href="https://www.reddit.com/r/RooCode/" target="_blank"><img src="https://img.shields.io/badge/Word%20lid%20van%20Reddit-FF4500?style=for-the-badge&logo=reddit&logoColor=white" alt="Word lid van Reddit"></a>
+  
 </div>
 <br>
 <br>
 
 <div align="center">
+<h1>Roo Code (voorheen Roo Cline)</h1>
+<p align="center">
+<img src="https://media.githubusercontent.com/media/RooCodeInc/Roo-Code/main/src/assets/docs/demo.gif" width="100%" />
+</p>
 
-<a href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline" target="_blank"><img src="https://img.shields.io/badge/Download%20op%20VS%20Marketplace-blauw?style=for-the-badge&logo=visualstudiocode&logoColor=white" alt="Download op VS Marketplace"></a>
-<a href="https://github.com/RooCodeInc/Roo-Code/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop" target="_blank"><img src="https://img.shields.io/badge/Feature%20Requests-geel?style=for-the-badge" alt="Feature Requests"></a>
-<a href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline&ssr=false#review-details" target="_blank"><img src="https://img.shields.io/badge/Beoordeel%20%26%20Review-groen?style=for-the-badge" alt="Beoordeel & Review"></a>
+<a href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline" target="_blank"><img src="https://img.shields.io/badge/Download%20op%20VS%20Marketplace-blue?style=for-the-badge&logo=visualstudiocode&logoColor=white" alt="Download op VS Marketplace"></a>
+<a href="https://github.com/RooCodeInc/Roo-Code/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop" target="_blank"><img src="https://img.shields.io/badge/Feature%20Requests-yellow?style=for-the-badge" alt="Feature Requests"></a>
+<a href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline&ssr=false#review-details" target="_blank"><img src="https://img.shields.io/badge/Beoordeel%20%26%20Review-green?style=for-the-badge" alt="Beoordeel & Review"></a>
 <a href="https://docs.roocode.com" target="_blank"><img src="https://img.shields.io/badge/Documentatie-6B46C1?style=for-the-badge&logo=readthedocs&logoColor=white" alt="Documentatie"></a>
 
 </div>
@@ -51,13 +50,13 @@ Bekijk de [CHANGELOG](../../CHANGELOG.md) voor gedetailleerde updates en fixes.
 
 ---
 
-## 🎉 Roo Code 3.18 Uitgebracht
+## 🎉 Roo Code 3.19 Uitgebracht
 
-Roo Code 3.18 brengt krachtige nieuwe functies en verbeteringen op basis van jullie feedback!
+Roo Code 3.19 brengt krachtige nieuwe functies en verbeteringen op basis van jullie feedback!
 
-- **Gemini 2.5 Flash Preview-modellen** - Toegang tot de nieuwste Gemini Flash-modellen voor snellere en efficiëntere antwoorden.
-- **Intelligente contextcompressie-knop** - Nieuwe knop in de taakkop waarmee je content intelligent kunt comprimeren met visuele feedback.
-- **YAML-ondersteuning voor modedefinities** - Creëer en pas modi eenvoudiger aan met YAML-ondersteuning.
+- **Intelligente contextcompressie standaard ingeschakeld** - Intelligente contextcompressie is nu automatisch actief om prestaties te verbeteren en kosten te verlagen.
+- **Verbeterd contextbeheer** - Betere configuratie voor het beheren van het contextvenster en het optimaliseren van AI-interacties.
+- **Uitgebreide modelondersteuning** - Verbeterde compatibiliteit met verschillende AI-providers en nieuwste modellen.
 
 ---
 

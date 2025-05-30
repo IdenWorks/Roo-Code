@@ -50,13 +50,13 @@ Sprawdź [CHANGELOG](../../CHANGELOG.md), aby uzyskać szczegółowe informacje 
 
 ---
 
-## 🎉 Roo Code 3.18 został wydany
+## 🎉 Roo Code 3.19 został wydany
 
-Roo Code 3.18 wprowadza potężne nowe funkcje i usprawnienia na podstawie opinii użytkowników!
+Roo Code 3.19 wprowadza potężne nowe funkcje i usprawnienia na podstawie opinii użytkowników!
 
-- **Modele Gemini 2.5 Flash Preview** - Dostęp do najnowszych modeli Gemini Flash dla szybszych i bardziej efektywnych odpowiedzi.
-- **Inteligentny przycisk kondensowania kontekstu** - Nowy przycisk w nagłówku zadania pozwala inteligentnie kondensować treść z wizualnym feedbackiem.
-- **Wsparcie YAML dla definicji trybów** - Twórz i dostosowuj tryby łatwiej dzięki wsparciu YAML.
+- **Inteligentne kondensowanie kontekstu domyślnie włączone** - Inteligentne kondensowanie kontekstu jest teraz automatycznie aktywne, aby poprawić wydajność i zmniejszyć koszty.
+- **Ulepszone zarządzanie kontekstem** - Lepsza konfiguracja do zarządzania oknem kontekstu i optymalizacji interakcji z AI.
+- **Rozszerzone wsparcie modeli** - Ulepszona kompatybilność z różnymi dostawcami AI i najnowszymi modelami.
 
 ---
 

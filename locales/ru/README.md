@@ -12,27 +12,25 @@
 </div>
 <br>
 <div align="center">
-  <h1>Roo Code (ранее Roo Cline)</h1>
-  <p align="center">
-  <img src="https://media.githubusercontent.com/media/RooCodeInc/Roo-Code/main/src/assets/docs/demo.gif" width="100%" />
-  </p>
-  <p align="center">
-  <img src="https://media.githubusercontent.com/media/RooCodeInc/Roo-Code/main/assets/docs/demo.gif" width="100%" />
-  </p>
+  <h2>Присоединяйтесь к сообществу Roo Code</h2>
   <p>Общайтесь с разработчиками, делитесь идеями и будьте в курсе последних инструментов программирования с поддержкой ИИ.</p>
   
-  <a href="https://discord.gg/roocode" target="_blank"><img src="https://img.shields.io/badge/Присоединиться_к_Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Присоединиться к Discord"></a>
-  <a href="https://www.reddit.com/r/RooCode/" target="_blank"><img src="https://img.shields.io/badge/Присоединиться_к_Reddit-FF4500?style=for-the-badge&logo=reddit&logoColor=white" alt="Присоединиться к Reddit"></a>
+  <a href="https://discord.gg/roocode" target="_blank"><img src="https://img.shields.io/badge/Присоединиться%20к%20Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Присоединиться к Discord"></a>
+  <a href="https://www.reddit.com/r/RooCode/" target="_blank"><img src="https://img.shields.io/badge/Присоединиться%20к%20Reddit-FF4500?style=for-the-badge&logo=reddit&logoColor=white" alt="Присоединиться к Reddit"></a>
   
 </div>
 <br>
 <br>
 
 <div align="center">
+<h1>Roo Code (ранее Roo Cline)</h1>
+<p align="center">
+<img src="https://media.githubusercontent.com/media/RooCodeInc/Roo-Code/main/src/assets/docs/demo.gif" width="100%" />
+</p>
 
-<a href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline" target="_blank"><img src="https://img.shields.io/badge/Скачать_в_VS_Marketplace-blue?style=for-the-badge&logo=visualstudiocode&logoColor=white" alt="Скачать в VS Marketplace"></a>
-<a href="https://github.com/RooCodeInc/Roo-Code/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop" target="_blank"><img src="https://img.shields.io/badge/Запросы_функций-yellow?style=for-the-badge" alt="Запросы функций"></a>
-<a href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline&ssr=false#review-details" target="_blank"><img src="https://img.shields.io/badge/Оценить_и_отзыв-green?style=for-the-badge" alt="Оценить и отзыв"></a>
+<a href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline" target="_blank"><img src="https://img.shields.io/badge/Скачать%20в%20VS%20Marketplace-blue?style=for-the-badge&logo=visualstudiocode&logoColor=white" alt="Скачать в VS Marketplace"></a>
+<a href="https://github.com/RooCodeInc/Roo-Code/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop" target="_blank"><img src="https://img.shields.io/badge/Запросы%20функций-yellow?style=for-the-badge" alt="Запросы функций"></a>
+<a href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline&ssr=false#review-details" target="_blank"><img src="https://img.shields.io/badge/Оценить%20%26%20Отзыв-green?style=for-the-badge" alt="Оценить & Отзыв"></a>
 <a href="https://docs.roocode.com" target="_blank"><img src="https://img.shields.io/badge/Документация-6B46C1?style=for-the-badge&logo=readthedocs&logoColor=white" alt="Документация"></a>
 
 </div>
@@ -52,13 +50,13 @@
 
 ---
 
-## 🎉 Выпущен Roo Code 3.18
+## 🎉 Выпущен Roo Code 3.19
 
-Roo Code 3.18 предлагает мощные новые функции и улучшения на основе ваших отзывов!
+Roo Code 3.19 предлагает мощные новые функции и улучшения на основе ваших отзывов!
 
-- **Модели предварительного просмотра Gemini 2.5 Flash** - Доступ к новейшим моделям Gemini Flash для более быстрых и эффективных ответов.
-- **Интеллектуальная кнопка сжатия контекста** - Новая кнопка в заголовке задачи позволяет интеллектуально сжимать содержимое с визуальной обратной связью.
-- **Поддержка YAML для определений режимов** - Создавайте и настраивайте режимы проще с поддержкой YAML.
+- **Интеллектуальное сжатие контекста включено по умолчанию** - Интеллектуальное сжатие контекста теперь автоматически активно для улучшения производительности и снижения затрат.
+- **Улучшенное управление контекстом** - Лучшая конфигурация для управления окном контекста и оптимизации взаимодействий с ИИ.
+- **Расширенная поддержка моделей** - Улучшенная совместимость с различными провайдерами ИИ и новейшими моделями.
 
 ---
 
