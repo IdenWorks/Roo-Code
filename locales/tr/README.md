@@ -50,13 +50,13 @@ Detaylı güncellemeler ve düzeltmeler için [CHANGELOG](../../CHANGELOG.md) do
 
 ---
 
-## 🎉 Roo Code 3.18 Yayınlandı
+## 🎉 Roo Code 3.19 Yayınlandı
 
-Roo Code 3.18 geri bildirimlerinize dayanarak güçlü yeni özellikler ve iyileştirmeler getiriyor!
+Roo Code 3.19 akıllı bağlam yönetimi iyileştirmeleri ve gelişmiş kullanıcı deneyimi getiriyor!
 
-- **Gemini 2.5 Flash Önizleme Modelleri** - Daha hızlı ve daha verimli yanıtlar için en yeni Gemini Flash modellerine erişim.
-- **Akıllı Bağlam Yoğunlaştırma Düğmesi** - Görev başlığındaki yeni düğme, görsel geri bildirimle içeriği akıllıca yoğunlaştırmanızı sağlıyor.
-- **Mod Tanımlamaları için YAML Desteği** - YAML desteği ile modları daha kolay oluşturun ve özelleştirin.
+- **Akıllı bağlam yoğunlaştırma varsayılan olarak etkin** - Bağlam yoğunlaştırma artık varsayılan olarak etkin ve otomatik yoğunlaştırmanın ne zaman gerçekleşeceği için yapılandırılabilir ayarlar.
+- **Manuel yoğunlaştırma düğmesi** - Görev başlığındaki yeni düğme, istediğiniz zaman manuel olarak bağlam yoğunlaştırmasını tetiklemenize olanak tanır.
+- **Gelişmiş yoğunlaştırma ayarları** - Bağlam Ayarları paneli aracılığıyla otomatik yoğunlaştırmanın ne zaman ve nasıl gerçekleşeceğini ayarlayın.
 
 ---
 

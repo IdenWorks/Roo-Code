@@ -50,13 +50,13 @@ Consulta el [CHANGELOG](../../CHANGELOG.md) para ver actualizaciones detalladas 
 
 ---
 
-## 🎉 Roo Code 3.18 Lanzado
+## 🎉 Roo Code 3.19 Lanzado
 
-¡Roo Code 3.18 trae potentes nuevas funcionalidades y mejoras basadas en tus comentarios!
+¡Roo Code 3.19 trae mejoras en la gestión inteligente de contexto y una experiencia de usuario mejorada!
 
-- **Modelos de vista previa Gemini 2.5 Flash** - Accede a los últimos modelos Gemini Flash para obtener respuestas más rápidas y eficientes.
-- **Botón inteligente de condensación de contexto** - Nuevo botón en la cabecera de tareas que te permite condensar contenido de forma inteligente con retroalimentación visual.
-- **Soporte YAML para definiciones de modo** - Crea y personaliza modos más fácilmente con soporte YAML.
+- **Condensación inteligente de contexto habilitada por defecto** - La condensación de contexto ahora está habilitada por defecto con configuraciones ajustables para cuando ocurre la condensación automática.
+- **Botón de condensación manual** - Nuevo botón en la cabecera de tareas que te permite activar manualmente la condensación de contexto en cualquier momento.
+- **Configuraciones avanzadas de condensación** - Ajusta cuándo y cómo ocurre la condensación automática a través del panel de Configuraciones de Contexto.
 
 ---
 

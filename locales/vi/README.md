@@ -50,13 +50,13 @@ Kiểm tra [CHANGELOG](../../CHANGELOG.md) để biết thông tin chi tiết v�
 
 ---
 
-## 🎉 Đã Phát Hành Roo Code 3.18
+## 🎉 Đã Phát Hành Roo Code 3.19
 
-Roo Code 3.18 mang đến những tính năng mạnh mẽ mới và cải tiến dựa trên phản hồi của bạn!
+Roo Code 3.19 mang đến những tính năng mạnh mẽ mới và cải tiến dựa trên phản hồi của bạn!
 
-- **Các mô hình Gemini 2.5 Flash Preview** - Truy cập các mô hình Gemini Flash mới nhất để có phản hồi nhanh hơn và hiệu quả hơn.
-- **Nút nén ngữ cảnh thông minh** - Nút mới trong tiêu đề tác vụ cho phép bạn nén nội dung một cách thông minh với phản hồi trực quan.
-- **Hỗ trợ YAML cho định nghĩa chế độ** - Tạo và tùy chỉnh các chế độ dễ dàng hơn với hỗ trợ YAML.
+- **Nén ngữ cảnh thông minh được bật mặc định** - Nén ngữ cảnh thông minh hiện được kích hoạt tự động để cải thiện hiệu suất và giảm chi phí.
+- **Quản lý ngữ cảnh được cải thiện** - Cấu hình tốt hơn để quản lý cửa sổ ngữ cảnh và tối ưu hóa tương tác AI.
+- **Hỗ trợ mô hình mở rộng** - Khả năng tương thích được cải thiện với các nhà cung cấp AI khác nhau và các mô hình mới nhất.
 
 ---
 
