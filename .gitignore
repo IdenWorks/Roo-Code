@@ -10,6 +10,7 @@ mock/
 
 # IDEs
 .idea
+.cursor
 
 # Builds
 bin/
