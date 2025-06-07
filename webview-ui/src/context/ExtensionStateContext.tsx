@@ -35,6 +35,8 @@ export interface ExtensionStateContextType extends ExtensionState {
 	filePaths: string[]
 	openedTabs: Array<{ label: string; isActive: boolean; path?: string }>
 	organizationAllowList: OrganizationAllowList
+	cloudIsAuthenticated: boolean
+	maxConcurrentFileReads?: number
 	condensingApiConfigId?: string
 	setCondensingApiConfigId: (value: string) => void
 	customCondensingPrompt?: string
@@ -192,11 +194,13 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		maxReadFileLine: -1, // Default max read file line limit
 		pinnedApiConfigs: {}, // Empty object for pinned API configs
 		terminalZshOhMy: false, // Default Oh My Zsh integration setting
+		maxConcurrentFileReads: 15, // Default concurrent file reads
 		terminalZshP10k: false, // Default Powerlevel10k integration setting
 		terminalZdotdir: false, // Default ZDOTDIR handling setting
 		terminalCompressProgressBar: true, // Default to compress progress bar output
 		historyPreviewCollapsed: false, // Initialize the new state (default to expanded)
 		cloudUserInfo: null,
+		cloudIsAuthenticated: false,
 		organizationAllowList: ORGANIZATION_ALLOW_ALL,
 		autoCondenseContext: true,
 		autoCondenseContextPercent: 100,
@@ -259,14 +263,14 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 					setOpenedTabs(tabs)
 					break
 				}
-				case "partialMessage": {
-					const partialMessage = message.partialMessage!
+				case "messageUpdated": {
+					const clineMessage = message.clineMessage!
 					setState((prevState) => {
 						// worth noting it will never be possible for a more up-to-date message to be sent here or in normal messages post since the presentAssistantContent function uses lock
-						const lastIndex = findLastIndex(prevState.clineMessages, (msg) => msg.ts === partialMessage.ts)
+						const lastIndex = findLastIndex(prevState.clineMessages, (msg) => msg.ts === clineMessage.ts)
 						if (lastIndex !== -1) {
 							const newClineMessages = [...prevState.clineMessages]
-							newClineMessages[lastIndex] = partialMessage
+							newClineMessages[lastIndex] = clineMessage
 							return { ...prevState, clineMessages: newClineMessages }
 						}
 						return prevState
@@ -315,6 +319,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		writeDelayMs: state.writeDelayMs,
 		screenshotQuality: state.screenshotQuality,
 		routerModels: extensionRouterModels,
+		cloudIsAuthenticated: state.cloudIsAuthenticated ?? false,
 		setExperimentEnabled: (id, enabled) =>
 			setState((prevState) => ({ ...prevState, experiments: { ...prevState.experiments, [id]: enabled } })),
 		setApiConfiguration,

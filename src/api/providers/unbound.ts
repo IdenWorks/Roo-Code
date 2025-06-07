@@ -1,7 +1,9 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import { ApiHandlerOptions, unboundDefaultModelId, unboundDefaultModelInfo } from "../../shared/api"
+import { unboundDefaultModelId, unboundDefaultModelInfo } from "@roo-code/types"
+
+import type { ApiHandlerOptions } from "../../shared/api"
 
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { convertToOpenAiMessages } from "../transform/openai-format"
@@ -11,6 +13,8 @@ import { addCacheBreakpoints as addGeminiCacheBreakpoints } from "../transform/c
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { RouterProvider } from "./router-provider"
 
+const ORIGIN_APP = "roo-code"
+
 const DEFAULT_HEADERS = {
 	"X-Unbound-Metadata": JSON.stringify({ labels: [{ key: "app", value: "roo-code" }] }),
 }
@@ -18,6 +22,20 @@ const DEFAULT_HEADERS = {
 interface UnboundUsage extends OpenAI.CompletionUsage {
 	cache_creation_input_tokens?: number
 	cache_read_input_tokens?: number
+}
+
+type UnboundChatCompletionCreateParamsStreaming = OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming & {
+	unbound_metadata: {
+		originApp: string
+		taskId?: string
+		mode?: string
+	}
+}
+
+type UnboundChatCompletionCreateParamsNonStreaming = OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming & {
+	unbound_metadata: {
+		originApp: string
+	}
 }
 
 export class UnboundHandler extends RouterProvider implements SingleCompletionHandler {
@@ -60,11 +78,16 @@ export class UnboundHandler extends RouterProvider implements SingleCompletionHa
 			maxTokens = info.maxTokens ?? undefined
 		}
 
-		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
+		const requestOptions: UnboundChatCompletionCreateParamsStreaming = {
 			model: modelId.split("/")[1],
 			max_tokens: maxTokens,
 			messages: openAiMessages,
 			stream: true,
+			unbound_metadata: {
+				originApp: ORIGIN_APP,
+				taskId: metadata?.taskId,
+				mode: metadata?.mode,
+			},
 		}
 
 		if (this.supportsTemperature(modelId)) {
@@ -108,9 +131,12 @@ export class UnboundHandler extends RouterProvider implements SingleCompletionHa
 		const { id: modelId, info } = await this.fetchModel()
 
 		try {
-			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
+			const requestOptions: UnboundChatCompletionCreateParamsNonStreaming = {
 				model: modelId.split("/")[1],
 				messages: [{ role: "user", content: prompt }],
+				unbound_metadata: {
+					originApp: ORIGIN_APP,
+				},
 			}
 
 			if (this.supportsTemperature(modelId)) {

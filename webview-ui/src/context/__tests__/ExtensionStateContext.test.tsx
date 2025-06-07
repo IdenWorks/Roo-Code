@@ -207,6 +207,7 @@ describe("mergeExtensionState", () => {
 			organizationAllowList: { allowAll: true, providers: {} },
 			autoCondenseContext: true,
 			autoCondenseContextPercent: 100,
+			cloudIsAuthenticated: false,
 		}
 
 		const prevState: ExtensionState = {
@@ -221,6 +222,7 @@ describe("mergeExtensionState", () => {
 			experiments: {
 				powerSteering: true,
 				autoCondenseContext: true,
+				concurrentFileReads: true,
 			} as Record<ExperimentId, boolean>,
 		}
 
@@ -234,6 +236,7 @@ describe("mergeExtensionState", () => {
 		expect(result.experiments).toEqual({
 			powerSteering: true,
 			autoCondenseContext: true,
+			concurrentFileReads: true,
 		})
 	})
 })

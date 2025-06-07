@@ -30,7 +30,7 @@ import { exportSettings, importSettings } from "../config/importExport"
 import { getOpenAiModels } from "../../api/providers/openai"
 import { getOllamaModels } from "../../api/providers/ollama"
 import { getVsCodeLmModels } from "../../api/providers/vscode-lm"
-import { getLmStudioModels } from "../../api/providers/lmstudio"
+import { getLmStudioModels } from "../../api/providers/lm-studio"
 import { openMention } from "../mentions"
 import { TelemetrySetting } from "../../shared/TelemetrySetting"
 import { getWorkspacePath } from "../../utils/path"
@@ -957,6 +957,11 @@ export const webviewMessageHandler = async (provider: ClineProvider, message: We
 			break
 		case "maxReadFileLine":
 			await updateGlobalState("maxReadFileLine", message.value)
+			await provider.postStateToWebview()
+			break
+		case "maxConcurrentFileReads":
+			const valueToSave = message.value // Capture the value intended for saving
+			await updateGlobalState("maxConcurrentFileReads", valueToSave)
 			await provider.postStateToWebview()
 			break
 		case "setHistoryPreviewCollapsed": // Add the new case handler

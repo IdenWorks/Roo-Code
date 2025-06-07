@@ -4,6 +4,7 @@
 	"views.contextMenu.label": "Roo Code for Otto",
 	"views.terminalMenu.label": "Roo Code for Otto",
 	"views.activitybar.title": "Roo Code for Otto",
+	"views.sidebar.name": "Roo Code for Otto",
 	"command.newTask.title": "New Task",
 	"command.mcpServers.title": "MCP Servers",
 	"command.prompts.title": "Modes",
