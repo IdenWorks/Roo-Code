@@ -1,4 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { McpExecution } from "./McpExecution"
 import { useSize } from "react-use"
 import { useTranslation, Trans } from "react-i18next"
 import deepEqual from "fast-deep-equal"
@@ -25,11 +26,12 @@ import MarkdownBlock from "../common/MarkdownBlock"
 import { ReasoningBlock } from "./ReasoningBlock"
 import Thumbnails from "../common/Thumbnails"
 import McpResourceRow from "../mcp/McpResourceRow"
-import McpToolRow from "../mcp/McpToolRow"
 
 import { Mention } from "./Mention"
 import { CheckpointSaved } from "./checkpoints/CheckpointSaved"
 import { FollowUpSuggest } from "./FollowUpSuggest"
+import { BatchFilePermission } from "./BatchFilePermission"
+import { BatchDiffApproval } from "./BatchDiffApproval"
 import { ProgressIndicator } from "./ProgressIndicator"
 import { Markdown } from "./Markdown"
 import { CommandExecution } from "./CommandExecution"
@@ -47,6 +49,7 @@ interface ChatRowProps {
 	onToggleExpand: (ts: number) => void
 	onHeightChange: (isTaller: boolean) => void
 	onSuggestionClick?: (answer: string, event?: React.MouseEvent) => void
+	onBatchFileResponse?: (response: { [key: string]: boolean }) => void
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -95,6 +98,7 @@ export const ChatRowContent = ({
 	isStreaming,
 	onToggleExpand,
 	onSuggestionClick,
+	onBatchFileResponse,
 }: ChatRowContentProps) => {
 	const { t } = useTranslation()
 	const { mcpServers, alwaysAllowMcp, currentCheckpoint } = useExtensionState()
@@ -290,6 +294,22 @@ export const ChatRowContent = ({
 		switch (tool.tool) {
 			case "editedExistingFile":
 			case "appliedDiff":
+				// Check if this is a batch diff request
+				if (message.type === "ask" && tool.batchDiffs && Array.isArray(tool.batchDiffs)) {
+					return (
+						<>
+							<div style={headerStyle}>
+								{toolIcon("diff")}
+								<span style={{ fontWeight: "bold" }}>
+									{t("chat:fileOperations.wantsToApplyBatchChanges")}
+								</span>
+							</div>
+							<BatchDiffApproval files={tool.batchDiffs} ts={message.ts} />
+						</>
+					)
+				}
+
+				// Regular single file diff
 				return (
 					<>
 						<div style={headerStyle}>
@@ -399,6 +419,30 @@ export const ChatRowContent = ({
 					</>
 				)
 			case "readFile":
+				// Check if this is a batch file permission request
+				const isBatchRequest = message.type === "ask" && tool.batchFiles && Array.isArray(tool.batchFiles)
+
+				if (isBatchRequest) {
+					return (
+						<>
+							<div style={headerStyle}>
+								{toolIcon("files")}
+								<span style={{ fontWeight: "bold" }}>
+									{t("chat:fileOperations.wantsToReadMultiple")}
+								</span>
+							</div>
+							<BatchFilePermission
+								files={tool.batchFiles || []}
+								onPermissionResponse={(response) => {
+									onBatchFileResponse?.(response)
+								}}
+								ts={message?.ts}
+							/>
+						</>
+					)
+				}
+
+				// Regular single file read request
 				return (
 					<>
 						<div style={headerStyle}>
@@ -407,7 +451,11 @@ export const ChatRowContent = ({
 								{message.type === "ask"
 									? tool.isOutsideWorkspace
 										? t("chat:fileOperations.wantsToReadOutsideWorkspace")
-										: t("chat:fileOperations.wantsToRead")
+										: tool.additionalFileCount && tool.additionalFileCount > 0
+											? t("chat:fileOperations.wantsToReadAndXMore", {
+													count: tool.additionalFileCount,
+												})
+											: t("chat:fileOperations.wantsToRead")
 									: t("chat:fileOperations.didRead")}
 							</span>
 						</div>
@@ -873,14 +921,15 @@ export const ChatRowContent = ({
 					)
 				case "user_feedback":
 					return (
-						<div className="bg-vscode-editor-background border rounded-xs p-1 overflow-hidden whitespace-pre-wrap word-break-break-word overflow-wrap-anywhere">
-							<div className="flex justify-between gap-2">
-								<div className="flex-grow px-2 py-1">
+						<div className="bg-vscode-editor-background border rounded-xs p-1 overflow-hidden whitespace-pre-wrap">
+							<div className="flex justify-between">
+								<div className="flex-grow px-2 py-1 wrap-anywhere">
 									<Mention text={message.text} withShadow />
 								</div>
 								<Button
 									variant="ghost"
 									size="icon"
+									className="shrink-0"
 									disabled={isStreaming}
 									onClick={(e) => {
 										e.stopPropagation()
@@ -933,28 +982,6 @@ export const ChatRowContent = ({
 					)
 				case "shell_integration_warning":
 					return <CommandExecutionError />
-				case "mcp_server_response":
-					return (
-						<>
-							<div style={{ paddingTop: 0 }}>
-								<div
-									style={{
-										marginBottom: "4px",
-										opacity: 0.8,
-										fontSize: "12px",
-										textTransform: "uppercase",
-									}}>
-									{t("chat:response")}
-								</div>
-								<CodeAccordian
-									code={message.text}
-									language="json"
-									isExpanded={true}
-									onToggleExpand={handleToggleExpand}
-								/>
-							</div>
-						</>
-					)
 				case "checkpoint_saved":
 					return (
 						<CheckpointSaved
@@ -1038,7 +1065,17 @@ export const ChatRowContent = ({
 						/>
 					)
 				case "use_mcp_server":
-					const useMcpServer = safeJsonParse<ClineAskUseMcpServer>(message.text)
+					// Parse the message text to get the MCP server request
+					const messageJson = safeJsonParse<any>(message.text, {})
+
+					// Extract the response field if it exists
+					const { response, ...mcpServerRequest } = messageJson
+
+					// Create the useMcpServer object with the response field
+					const useMcpServer: ClineAskUseMcpServer = {
+						...mcpServerRequest,
+						response,
+					}
 
 					if (!useMcpServer) {
 						return null
@@ -1052,13 +1089,7 @@ export const ChatRowContent = ({
 								{icon}
 								{title}
 							</div>
-							<div
-								style={{
-									background: "var(--vscode-textCodeBlock-background)",
-									borderRadius: "3px",
-									padding: "8px 10px",
-									marginTop: "8px",
-								}}>
+							<div className="w-full bg-vscode-editor-background border border-vscode-border rounded-xs p-2 mt-2">
 								{useMcpServer.type === "access_mcp_resource" && (
 									<McpResourceRow
 										item={{
@@ -1078,45 +1109,16 @@ export const ChatRowContent = ({
 									/>
 								)}
 								{useMcpServer.type === "use_mcp_tool" && (
-									<>
-										<div onClick={(e) => e.stopPropagation()}>
-											<McpToolRow
-												tool={{
-													name: useMcpServer.toolName || "",
-													description:
-														server?.tools?.find(
-															(tool) => tool.name === useMcpServer.toolName,
-														)?.description || "",
-													alwaysAllow:
-														server?.tools?.find(
-															(tool) => tool.name === useMcpServer.toolName,
-														)?.alwaysAllow || false,
-												}}
-												serverName={useMcpServer.serverName}
-												serverSource={server?.source}
-												alwaysAllowMcp={alwaysAllowMcp}
-											/>
-										</div>
-										{useMcpServer.arguments && useMcpServer.arguments !== "{}" && (
-											<div style={{ marginTop: "8px" }}>
-												<div
-													style={{
-														marginBottom: "4px",
-														opacity: 0.8,
-														fontSize: "12px",
-														textTransform: "uppercase",
-													}}>
-													{t("chat:arguments")}
-												</div>
-												<CodeAccordian
-													code={useMcpServer.arguments}
-													language="json"
-													isExpanded={true}
-													onToggleExpand={handleToggleExpand}
-												/>
-											</div>
-										)}
-									</>
+									<McpExecution
+										executionId={message.ts.toString()}
+										text={useMcpServer.arguments !== "{}" ? useMcpServer.arguments : undefined}
+										serverName={useMcpServer.serverName}
+										toolName={useMcpServer.toolName}
+										isArguments={true}
+										server={server}
+										useMcpServer={useMcpServer}
+										alwaysAllowMcp={alwaysAllowMcp}
+									/>
 								)}
 							</div>
 						</>

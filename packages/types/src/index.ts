@@ -1,3 +1,5 @@
+export * from "./providers/index.js"
+
 export * from "./api.js"
 export * from "./codebase-index.js"
 export * from "./cloud.js"
@@ -5,6 +7,7 @@ export * from "./experiment.js"
 export * from "./global-settings.js"
 export * from "./history.js"
 export * from "./ipc.js"
+export * from "./mcp.js"
 export * from "./message.js"
 export * from "./mode.js"
 export * from "./model.js"

@@ -1,9 +1,10 @@
-import { XAIHandler } from "../xai"
-import { xaiDefaultModelId, xaiModels } from "../../../shared/api"
 import OpenAI from "openai"
 import { Anthropic } from "@anthropic-ai/sdk"
 
-// Mock OpenAI client
+import { xaiDefaultModelId, xaiModels } from "@roo-code/types"
+
+import { XAIHandler } from "../xai"
+
 jest.mock("openai", () => {
 	const createMock = jest.fn()
 	return jest.fn(() => ({
@@ -61,7 +62,7 @@ describe("XAIHandler", () => {
 	})
 
 	test("should return specified model when valid model is provided", () => {
-		const testModelId = "grok-2-latest"
+		const testModelId = "grok-3"
 		const handlerWithModel = new XAIHandler({ apiModelId: testModelId })
 		const model = handlerWithModel.getModel()
 
@@ -71,7 +72,7 @@ describe("XAIHandler", () => {
 
 	test("should include reasoning_effort parameter for mini models", async () => {
 		const miniModelHandler = new XAIHandler({
-			apiModelId: "grok-3-mini-beta",
+			apiModelId: "grok-3-mini",
 			reasoningEffort: "high",
 		})
 
@@ -100,7 +101,7 @@ describe("XAIHandler", () => {
 
 	test("should not include reasoning_effort parameter for non-mini models", async () => {
 		const regularModelHandler = new XAIHandler({
-			apiModelId: "grok-2-latest",
+			apiModelId: "grok-3",
 			reasoningEffort: "high",
 		})
 
@@ -254,7 +255,7 @@ describe("XAIHandler", () => {
 
 	test("createMessage should pass correct parameters to OpenAI client", async () => {
 		// Setup a handler with specific model
-		const modelId = "grok-2-latest"
+		const modelId = "grok-3"
 		const modelInfo = xaiModels[modelId]
 		const handlerWithModel = new XAIHandler({ apiModelId: modelId })
 

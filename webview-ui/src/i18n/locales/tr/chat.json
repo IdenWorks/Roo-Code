@@ -11,7 +11,8 @@
 		"closeAndStart": "Görevi kapat ve yeni bir görev başlat",
 		"export": "Görev geçmişini dışa aktar",
 		"delete": "Görevi sil (Onayı atlamak için Shift + Tıkla)",
-		"condenseContext": "Bağlamı akıllıca yoğunlaştır"
+		"condenseContext": "Bağlamı akıllıca yoğunlaştır",
+		"share": "Görevi paylaş"
 	},
 	"unpin": "Sabitlemeyi iptal et",
 	"pin": "Sabitle",
@@ -149,7 +150,10 @@
 		"didSearchReplace": "Roo bu dosyada arama ve değiştirme yaptı:",
 		"wantsToInsert": "Roo bu dosyaya içerik eklemek istiyor:",
 		"wantsToInsertWithLineNumber": "Roo bu dosyanın {{lineNumber}}. satırına içerik eklemek istiyor:",
-		"wantsToInsertAtEnd": "Roo bu dosyanın sonuna içerik eklemek istiyor:"
+		"wantsToInsertAtEnd": "Roo bu dosyanın sonuna içerik eklemek istiyor:",
+		"wantsToReadAndXMore": "Roo bu dosyayı ve {{count}} tane daha okumak istiyor:",
+		"wantsToReadMultiple": "Roo birden fazla dosya okumak istiyor:",
+		"wantsToApplyBatchChanges": "Roo birden fazla dosyaya değişiklik uygulamak istiyor:"
 	},
 	"directoryOperations": {
 		"wantsToViewTopLevel": "Roo bu dizindeki üst düzey dosyaları görüntülemek istiyor:",
@@ -212,9 +216,9 @@
 		"title": "🎉 Roo Code {{version}} Yayınlandı",
 		"description": "Roo Code {{version}} geri bildirimlerinize dayalı güçlü yeni özellikler ve iyileştirmeler getiriyor.",
 		"whatsNew": "Yenilikler",
-		"feature1": "<bold>Akıllı Bağlam Sıkıştırma Varsayılan Olarak Etkin</bold>: Bağlam sıkıştırma artık varsayılan olarak etkin ve otomatik sıkıştırmanın ne zaman gerçekleşeceği için yapılandırılabilir ayarlar mevcut",
-		"feature2": "<bold>Manuel Sıkıştırma Butonu</bold>: Görev başlığındaki yeni buton, istediğiniz zaman manuel olarak bağlam sıkıştırmayı tetiklemenize olanak tanır",
-		"feature3": "<bold>Gelişmiş Sıkıştırma Ayarları</bold>: <contextSettingsLink>Bağlam Ayarları</contextSettingsLink> üzerinden otomatik sıkıştırmanın ne zaman ve nasıl gerçekleşeceğini ince ayarlayın",
+		"feature1": "<bold>Deneysel Marketplace</bold>: Yeni marketplaceden modları ve MCP'leri keşfedin ve kurun (<experimentalSettingsLink>Deneysel Ayarlar</experimentalSettingsLink>'da etkinleştirin)",
+		"feature2": "<bold>Gelişmiş Dosya İşlemleri</bold>: Deneysel çoklu eşzamanlı dosya yazma işlemleri ve eşzamanlı okuma artık <contextSettingsLink>Bağlam Ayarları</contextSettingsLink>'nda mevcut",
+		"feature3": "<bold>MCP İyileştirmeleri ve Daha Fazlası</bold>: Gelişmiş MCP desteği, Mermaid kontrolleri, Amazon Bedrock thinking desteği ve daha fazlası!",
 		"hideButton": "Duyuruyu gizle",
 		"detailsDiscussLinks": "<discordLink>Discord</discordLink> ve <redditLink>Reddit</redditLink> üzerinde daha fazla ayrıntı edinin ve tartışmalara katılın 🚀"
 	},
@@ -267,5 +271,20 @@
 		"wantsToSearch": "Roo kod tabanında <code>{{query}}</code> aramak istiyor:",
 		"wantsToSearchWithPath": "Roo <code>{{path}}</code> içinde kod tabanında <code>{{query}}</code> aramak istiyor:",
 		"didSearch": "<code>{{query}}</code> için {{count}} sonuç bulundu:"
+	},
+	"read-batch": {
+		"approve": {
+			"title": "Tümünü Onayla"
+		},
+		"deny": {
+			"title": "Tümünü Reddet"
+		}
+	},
+	"indexingStatus": {
+		"ready": "İndeks hazır",
+		"indexing": "İndeksleniyor {{percentage}}%",
+		"indexed": "İndekslendi",
+		"error": "İndeks hatası",
+		"status": "İndeks durumu"
 	}
 }

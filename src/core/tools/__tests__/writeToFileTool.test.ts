@@ -141,6 +141,25 @@ describe("writeToFileTool", () => {
 				finalContent: "final content",
 			}),
 			scrollToFirstDiff: jest.fn(),
+			pushToolWriteResult: jest.fn().mockImplementation(async function (
+				this: any,
+				task: any,
+				cwd: string,
+				isNewFile: boolean,
+			) {
+				// Simulate the behavior of pushToolWriteResult
+				if (this.userEdits) {
+					await task.say(
+						"user_feedback_diff",
+						JSON.stringify({
+							tool: isNewFile ? "newFileCreated" : "editedExistingFile",
+							path: "test/path.txt",
+							diff: this.userEdits,
+						}),
+					)
+				}
+				return "Tool result message"
+			}),
 		}
 		mockCline.api = {
 			getModel: jest.fn().mockReturnValue({ id: "claude-3" }),
@@ -343,11 +362,14 @@ describe("writeToFileTool", () => {
 		})
 
 		it("reports user edits with diff feedback", async () => {
+			const userEditsValue = "- old line\n+ new line"
 			mockCline.diffViewProvider.saveChanges.mockResolvedValue({
 				newProblemsMessage: " with warnings",
-				userEdits: "- old line\n+ new line",
+				userEdits: userEditsValue,
 				finalContent: "modified content",
 			})
+			// Manually set the property on the mock instance because the original saveChanges is not called
+			mockCline.diffViewProvider.userEdits = userEditsValue
 
 			await executeWriteFileTool({}, { fileExists: true })
 
@@ -374,6 +396,35 @@ describe("writeToFileTool", () => {
 			await executeWriteFileTool({}, { isPartial: true })
 
 			expect(mockHandleError).toHaveBeenCalledWith("writing file", expect.any(Error))
+			expect(mockCline.diffViewProvider.reset).toHaveBeenCalled()
+		})
+	})
+
+	describe("parameter validation", () => {
+		it("errors and resets on missing path parameter", async () => {
+			await executeWriteFileTool({ path: undefined })
+
+			expect(mockCline.consecutiveMistakeCount).toBe(1)
+			expect(mockCline.recordToolError).toHaveBeenCalledWith("write_to_file")
+			expect(mockCline.sayAndCreateMissingParamError).toHaveBeenCalledWith("write_to_file", "path")
+			expect(mockCline.diffViewProvider.reset).toHaveBeenCalled()
+		})
+
+		it("errors and resets on empty path parameter", async () => {
+			await executeWriteFileTool({ path: "" })
+
+			expect(mockCline.consecutiveMistakeCount).toBe(1)
+			expect(mockCline.recordToolError).toHaveBeenCalledWith("write_to_file")
+			expect(mockCline.sayAndCreateMissingParamError).toHaveBeenCalledWith("write_to_file", "path")
+			expect(mockCline.diffViewProvider.reset).toHaveBeenCalled()
+		})
+
+		it("errors and resets on missing content parameter", async () => {
+			await executeWriteFileTool({ content: undefined })
+
+			expect(mockCline.consecutiveMistakeCount).toBe(1)
+			expect(mockCline.recordToolError).toHaveBeenCalledWith("write_to_file")
+			expect(mockCline.sayAndCreateMissingParamError).toHaveBeenCalledWith("write_to_file", "content")
 			expect(mockCline.diffViewProvider.reset).toHaveBeenCalled()
 		})
 	})
