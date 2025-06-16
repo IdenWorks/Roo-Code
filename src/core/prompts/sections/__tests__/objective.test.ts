@@ -47,8 +47,9 @@ describe("getObjectiveSection", () => {
 			expect(objective).toContain("1. Analyze the user's task")
 			expect(objective).toContain("2. Work through these goals sequentially")
 			expect(objective).toContain("3. Remember, you have extensive capabilities")
-			expect(objective).toContain("4. Once you've completed the user's task")
-			expect(objective).toContain("5. The user may provide feedback")
+			expect(objective).toContain("4. **GIT WORKFLOW REQUIREMENTS**")
+			expect(objective).toContain("5. Once you've completed the user's task")
+			expect(objective).toContain("6. The user may provide feedback")
 		}
 	})
 
