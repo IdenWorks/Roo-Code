@@ -3,7 +3,7 @@
 	"displayName": "%extension.displayName%",
 	"description": "%extension.description%",
 	"publisher": "IdenWorks",
-	"version": "3.20.1",
+	"version": "3.20.3",
 	"icon": "assets/icons/icon.png",
 	"galleryBanner": {
 		"color": "#617A91",
@@ -176,7 +176,7 @@
 			"editor/context": [
 				{
 					"submenu": "roo-otto.contextMenu",
-					"group": "navigation"
+					"group": "1"
 				}
 			],
 			"roo-otto.contextMenu": [
@@ -196,7 +196,7 @@
 			"terminal/context": [
 				{
 					"submenu": "roo-otto.terminalMenu",
-					"group": "navigation"
+					"group": "2"
 				}
 			],
 			"roo-otto.terminalMenu": [
