@@ -1,4 +1,5 @@
-import { vitest, describe, it, expect, beforeEach, afterAll } from "vitest"
+// npx vitest utils/__tests__/config.spec.ts
+
 import { injectEnv, injectVariables } from "../config"
 
 describe("injectEnv", () => {
