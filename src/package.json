@@ -339,6 +339,11 @@
 					"type": "boolean",
 					"default": false,
 					"description": "%settings.rooCodeCloudEnabled.description%"
+				},
+				"roo-otto.httpServerEnabled": {
+					"type": "boolean",
+					"default": false,
+					"description": "%settings.httpServerEnabled.description%"
 				}
 			}
 		}

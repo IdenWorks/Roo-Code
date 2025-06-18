@@ -195,18 +195,56 @@ export async function activate(context: vscode.ExtensionContext) {
 		})
 	}
 	const api = new API(outputChannel, provider, socketPath, enableLogging)
-	// Initialize the HTTP API server
-	const httpServer = new HttpApiServer(api)
-	context.subscriptions.push({
+
+	// Initialize the HTTP API server only if enabled in settings
+	let httpServer: HttpApiServer | undefined
+
+	const initializeHttpServer = async () => {
+		const httpServerEnabled = vscode.workspace
+			.getConfiguration(Package.name)
+			.get<boolean>("httpServerEnabled", false)
+
+		if (httpServerEnabled && !httpServer) {
+			// Start the server
+			httpServer = new HttpApiServer(api)
+			try {
+				await httpServer.start()
+				outputChannel.appendLine("HTTP API server started successfully")
+			} catch (error) {
+				console.error("Failed to start HTTP API server:", error)
+				outputChannel.appendLine(`Failed to start HTTP API server: ${error}`)
+			}
+		} else if (!httpServerEnabled && httpServer) {
+			// Stop the server
+			try {
+				await httpServer.stop()
+				httpServer = undefined
+				outputChannel.appendLine("HTTP API server stopped")
+			} catch (error) {
+				console.error("Failed to stop HTTP API server:", error)
+				outputChannel.appendLine(`Failed to stop HTTP API server: ${error}`)
+			}
+		}
+	}
+
+	// Initialize server based on current setting
+	await initializeHttpServer()
+
+	// Listen for configuration changes
+	const configChangeListener = vscode.workspace.onDidChangeConfiguration(async (event) => {
+		if (event.affectsConfiguration(`${Package.name}.httpServerEnabled`)) {
+			await initializeHttpServer()
+		}
+	})
+
+	context.subscriptions.push(configChangeListener, {
 		dispose: async () => {
-			await httpServer.stop()
+			if (httpServer) {
+				await httpServer.stop()
+			}
 		},
 	})
 
-	// Start the server
-	httpServer.start().catch((error) => {
-		console.error("Failed to start HTTP API server:", error)
-	})
 	return api
 }
 
