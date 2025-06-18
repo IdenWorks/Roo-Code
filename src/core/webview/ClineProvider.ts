@@ -108,7 +108,7 @@ export class ClineProvider
 
 	public isViewLaunched = false
 	public settingsImportedAt?: number
-	public readonly latestAnnouncementId = "dec-12-2025-3-20" // Update for v3.20.0 announcement
+	public readonly latestAnnouncementId = "jun-17-2025-3-21" // Update for v3.21.0 announcement
 	public readonly providerSettingsManager: ProviderSettingsManager
 	public readonly customModesManager: CustomModesManager
 
@@ -501,9 +501,6 @@ export class ClineProvider
 
 		// If the extension is starting a new session, clear previous task state.
 		await this.removeClineFromStack()
-
-		// Set initial VSCode context for experiments
-		await this.updateVSCodeContext()
 
 		this.log("Webview view resolved")
 	}
@@ -1250,27 +1247,10 @@ export class ClineProvider
 		const state = await this.getStateToPostToWebview()
 		this.postMessageToWebview({ type: "state", state })
 
-		// Update VSCode context for experiments
-		await this.updateVSCodeContext()
-
 		// Check MDM compliance and send user to account tab if not compliant
 		if (!this.checkMdmCompliance()) {
 			await this.postMessageToWebview({ type: "action", action: "accountButtonClicked" })
 		}
-	}
-
-	/**
-	 * Updates VSCode context variables for experiments so they can be used in when clauses
-	 */
-	private async updateVSCodeContext() {
-		const { experiments } = await this.getState()
-
-		// Set context for marketplace experiment
-		await vscode.commands.executeCommand(
-			"setContext",
-			`${Package.name}.marketplaceEnabled`,
-			experiments.marketplace ?? false,
-		)
 	}
 
 	/**
@@ -1363,14 +1343,12 @@ export class ClineProvider
 		]
 		const cwd = this.cwd
 
-		// Only fetch marketplace data if the feature is enabled
+		// Fetch marketplace data
 		let marketplaceItems: any[] = []
 		let marketplaceInstalledMetadata: any = { project: {}, global: {} }
 
-		if (experiments.marketplace) {
-			marketplaceItems = (await this.marketplaceManager.getCurrentItems()) || []
-			marketplaceInstalledMetadata = await this.marketplaceManager.getInstallationMetadata()
-		}
+		marketplaceItems = (await this.marketplaceManager.getCurrentItems()) || []
+		marketplaceInstalledMetadata = await this.marketplaceManager.getInstallationMetadata()
 
 		// Check if there's a system prompt override for the current mode
 		const currentMode = mode ?? defaultModeSlug
