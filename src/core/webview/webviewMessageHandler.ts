@@ -201,7 +201,14 @@ export const webviewMessageHandler = async (
 			break
 		case "clearTask":
 			// clear task resets the current session and allows for a new task to be started, if this session is a subtask - it allows the parent task to be resumed
-			await provider.finishSubTask(t("common:tasks.canceled"))
+			// Check if the current task actually has a parent task
+			const currentTask = provider.getCurrentCline()
+			if (currentTask && currentTask.parentTask) {
+				await provider.finishSubTask(t("common:tasks.canceled"))
+			} else {
+				// Regular task - just clear it
+				await provider.clearTask()
+			}
 			await provider.postStateToWebview()
 			break
 		case "didShowAnnouncement":
@@ -226,16 +233,31 @@ export const webviewMessageHandler = async (
 			}
 
 			try {
-				const success = await CloudService.instance.shareTask(shareTaskId)
-				if (success) {
-					// Show success message
-					vscode.window.showInformationMessage(t("common:info.share_link_copied"))
+				const visibility = message.visibility || "organization"
+				const result = await CloudService.instance.shareTask(shareTaskId, visibility)
+
+				if (result.success && result.shareUrl) {
+					// Show success notification
+					const messageKey =
+						visibility === "public"
+							? "common:info.public_share_link_copied"
+							: "common:info.organization_share_link_copied"
+					vscode.window.showInformationMessage(t(messageKey))
 				} else {
-					// Show generic failure message
-					vscode.window.showErrorMessage(t("common:errors.share_task_failed"))
+					// Handle error
+					const errorMessage = result.error || "Failed to create share link"
+					if (errorMessage.includes("Authentication")) {
+						vscode.window.showErrorMessage(t("common:errors.share_auth_required"))
+					} else if (errorMessage.includes("sharing is not enabled")) {
+						vscode.window.showErrorMessage(t("common:errors.share_not_enabled"))
+					} else if (errorMessage.includes("not found")) {
+						vscode.window.showErrorMessage(t("common:errors.share_task_not_found"))
+					} else {
+						vscode.window.showErrorMessage(errorMessage)
+					}
 				}
 			} catch (error) {
-				// Show generic failure message
+				provider.log(`[shareCurrentTask] Unexpected error: ${error}`)
 				vscode.window.showErrorMessage(t("common:errors.share_task_failed"))
 			}
 			break

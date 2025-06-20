@@ -1,13 +1,12 @@
 import crypto from "crypto"
 import EventEmitter from "events"
 
-import axios from "axios"
 import * as vscode from "vscode"
 import { z } from "zod"
 
 import type { CloudUserInfo, CloudOrganizationMembership } from "@roo-code/types"
 
-import { getClerkBaseUrl, getRooCodeApiUrl } from "./Config"
+import { getClerkBaseUrl, getRooCodeApiUrl, PRODUCTION_CLERK_BASE_URL } from "./Config"
 import { RefreshTimer } from "./RefreshTimer"
 import { getUserAgent } from "./utils"
 
@@ -25,16 +24,71 @@ const authCredentialsSchema = z.object({
 
 type AuthCredentials = z.infer<typeof authCredentialsSchema>
 
-const AUTH_CREDENTIALS_KEY = "clerk-auth-credentials"
 const AUTH_STATE_KEY = "clerk-auth-state"
 
 type AuthState = "initializing" | "logged-out" | "active-session" | "inactive-session"
+
+const clerkSignInResponseSchema = z.object({
+	response: z.object({
+		created_session_id: z.string(),
+	}),
+})
+
+const clerkCreateSessionTokenResponseSchema = z.object({
+	jwt: z.string(),
+})
+
+const clerkMeResponseSchema = z.object({
+	response: z.object({
+		first_name: z.string().optional(),
+		last_name: z.string().optional(),
+		image_url: z.string().optional(),
+		primary_email_address_id: z.string().optional(),
+		email_addresses: z
+			.array(
+				z.object({
+					id: z.string(),
+					email_address: z.string(),
+				}),
+			)
+			.optional(),
+	}),
+})
+
+const clerkOrganizationMembershipsSchema = z.object({
+	response: z.array(
+		z.object({
+			id: z.string(),
+			role: z.string(),
+			permissions: z.array(z.string()).optional(),
+			created_at: z.number().optional(),
+			updated_at: z.number().optional(),
+			organization: z.object({
+				id: z.string(),
+				name: z.string(),
+				slug: z.string().optional(),
+				image_url: z.string().optional(),
+				has_image: z.boolean().optional(),
+				created_at: z.number().optional(),
+				updated_at: z.number().optional(),
+			}),
+		}),
+	),
+})
+
+class InvalidClientTokenError extends Error {
+	constructor() {
+		super("Invalid/Expired client token")
+		Object.setPrototypeOf(this, InvalidClientTokenError.prototype)
+	}
+}
 
 export class AuthService extends EventEmitter<AuthServiceEvents> {
 	private context: vscode.ExtensionContext
 	private timer: RefreshTimer
 	private state: AuthState = "initializing"
 	private log: (...args: unknown[]) => void
+	private readonly authCredentialsKey: string
 
 	private credentials: AuthCredentials | null = null
 	private sessionToken: string | null = null
@@ -45,6 +99,14 @@ export class AuthService extends EventEmitter<AuthServiceEvents> {
 
 		this.context = context
 		this.log = log || console.log
+
+		// Calculate auth credentials key based on Clerk base URL
+		const clerkBaseUrl = getClerkBaseUrl()
+		if (clerkBaseUrl !== PRODUCTION_CLERK_BASE_URL) {
+			this.authCredentialsKey = `clerk-auth-credentials-${clerkBaseUrl}`
+		} else {
+			this.authCredentialsKey = "clerk-auth-credentials"
+		}
 
 		this.timer = new RefreshTimer({
 			callback: async () => {
@@ -126,7 +188,7 @@ export class AuthService extends EventEmitter<AuthServiceEvents> {
 
 		this.context.subscriptions.push(
 			this.context.secrets.onDidChange((e) => {
-				if (e.key === AUTH_CREDENTIALS_KEY) {
+				if (e.key === this.authCredentialsKey) {
 					this.handleCredentialsChange()
 				}
 			}),
@@ -134,11 +196,11 @@ export class AuthService extends EventEmitter<AuthServiceEvents> {
 	}
 
 	private async storeCredentials(credentials: AuthCredentials): Promise<void> {
-		await this.context.secrets.store(AUTH_CREDENTIALS_KEY, JSON.stringify(credentials))
+		await this.context.secrets.store(this.authCredentialsKey, JSON.stringify(credentials))
 	}
 
 	private async loadCredentials(): Promise<AuthCredentials | null> {
-		const credentialsJson = await this.context.secrets.get(AUTH_CREDENTIALS_KEY)
+		const credentialsJson = await this.context.secrets.get(this.authCredentialsKey)
 		if (!credentialsJson) return null
 
 		try {
@@ -155,7 +217,7 @@ export class AuthService extends EventEmitter<AuthServiceEvents> {
 	}
 
 	private async clearCredentials(): Promise<void> {
-		await this.context.secrets.delete(AUTH_CREDENTIALS_KEY)
+		await this.context.secrets.delete(this.authCredentialsKey)
 	}
 
 	/**
@@ -208,7 +270,7 @@ export class AuthService extends EventEmitter<AuthServiceEvents> {
 				throw new Error("Invalid state parameter. Authentication request may have been tampered with.")
 			}
 
-			const { credentials } = await this.clerkSignIn(code)
+			const credentials = await this.clerkSignIn(code)
 
 			await this.storeCredentials(credentials)
 
@@ -285,7 +347,6 @@ export class AuthService extends EventEmitter<AuthServiceEvents> {
 	private async refreshSession(): Promise<void> {
 		if (!this.credentials) {
 			this.log("[auth] Cannot refresh session: missing credentials")
-			this.state = "inactive-session"
 			return
 		}
 
@@ -300,6 +361,10 @@ export class AuthService extends EventEmitter<AuthServiceEvents> {
 				this.fetchUserInfo()
 			}
 		} catch (error) {
+			if (error instanceof InvalidClientTokenError) {
+				this.log("[auth] Invalid/Expired client token: clearing credentials")
+				this.clearCredentials()
+			}
 			this.log("[auth] Failed to refresh session", error)
 			throw error
 		}
@@ -323,103 +388,93 @@ export class AuthService extends EventEmitter<AuthServiceEvents> {
 		return this.userInfo
 	}
 
-	private async clerkSignIn(ticket: string): Promise<{ credentials: AuthCredentials; sessionToken: string }> {
+	private async clerkSignIn(ticket: string): Promise<AuthCredentials> {
 		const formData = new URLSearchParams()
 		formData.append("strategy", "ticket")
 		formData.append("ticket", ticket)
 
-		const response = await axios.post(`${getClerkBaseUrl()}/v1/client/sign_ins`, formData, {
+		const response = await fetch(`${getClerkBaseUrl()}/v1/client/sign_ins`, {
+			method: "POST",
 			headers: {
 				"Content-Type": "application/x-www-form-urlencoded",
 				"User-Agent": this.userAgent(),
 			},
+			body: formData.toString(),
+			signal: AbortSignal.timeout(10000),
 		})
 
+		if (!response.ok) {
+			throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+		}
+
+		const {
+			response: { created_session_id: sessionId },
+		} = clerkSignInResponseSchema.parse(await response.json())
+
 		// 3. Extract the client token from the Authorization header.
-		const clientToken = response.headers.authorization
+		const clientToken = response.headers.get("authorization")
 
 		if (!clientToken) {
 			throw new Error("No authorization header found in the response")
 		}
 
-		// 4. Find the session using created_session_id and extract the JWT.
-		const sessionId = response.data?.response?.created_session_id
-
-		if (!sessionId) {
-			throw new Error("No session ID found in the response")
-		}
-
-		// Find the session in the client sessions array.
-		const session = response.data?.client?.sessions?.find((s: { id: string }) => s.id === sessionId)
-
-		if (!session) {
-			throw new Error("Session not found in the response")
-		}
-
-		// Extract the session token (JWT) and store it.
-		const sessionToken = session.last_active_token?.jwt
-
-		if (!sessionToken) {
-			throw new Error("Session does not have a token")
-		}
-
-		const credentials = authCredentialsSchema.parse({ clientToken, sessionId })
-
-		return { credentials, sessionToken }
+		return authCredentialsSchema.parse({ clientToken, sessionId })
 	}
 
 	private async clerkCreateSessionToken(): Promise<string> {
 		const formData = new URLSearchParams()
 		formData.append("_is_native", "1")
 
-		const response = await axios.post(
-			`${getClerkBaseUrl()}/v1/client/sessions/${this.credentials!.sessionId}/tokens`,
-			formData,
-			{
-				headers: {
-					"Content-Type": "application/x-www-form-urlencoded",
-					Authorization: `Bearer ${this.credentials!.clientToken}`,
-					"User-Agent": this.userAgent(),
-				},
+		const response = await fetch(`${getClerkBaseUrl()}/v1/client/sessions/${this.credentials!.sessionId}/tokens`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/x-www-form-urlencoded",
+				Authorization: `Bearer ${this.credentials!.clientToken}`,
+				"User-Agent": this.userAgent(),
 			},
-		)
+			body: formData.toString(),
+			signal: AbortSignal.timeout(10000),
+		})
 
-		const sessionToken = response.data?.jwt
-
-		if (!sessionToken) {
-			throw new Error("No JWT found in refresh response")
+		if (response.status >= 400 && response.status < 500) {
+			throw new InvalidClientTokenError()
+		} else if (!response.ok) {
+			throw new Error(`HTTP ${response.status}: ${response.statusText}`)
 		}
 
-		return sessionToken
+		const data = clerkCreateSessionTokenResponseSchema.parse(await response.json())
+
+		return data.jwt
 	}
 
 	private async clerkMe(): Promise<CloudUserInfo> {
-		const response = await axios.get(`${getClerkBaseUrl()}/v1/me`, {
+		const response = await fetch(`${getClerkBaseUrl()}/v1/me`, {
 			headers: {
 				Authorization: `Bearer ${this.credentials!.clientToken}`,
 				"User-Agent": this.userAgent(),
 			},
+			signal: AbortSignal.timeout(10000),
 		})
 
-		const userData = response.data?.response
-
-		if (!userData) {
-			throw new Error("No response user data")
+		if (!response.ok) {
+			throw new Error(`HTTP ${response.status}: ${response.statusText}`)
 		}
+
+		const { response: userData } = clerkMeResponseSchema.parse(await response.json())
 
 		const userInfo: CloudUserInfo = {}
 
-		userInfo.name = `${userData?.first_name} ${userData?.last_name}`
-		const primaryEmailAddressId = userData?.primary_email_address_id
-		const emailAddresses = userData?.email_addresses
+		userInfo.name = `${userData.first_name} ${userData.last_name}`
+		const primaryEmailAddressId = userData.primary_email_address_id
+		const emailAddresses = userData.email_addresses
 
 		if (primaryEmailAddressId && emailAddresses) {
 			userInfo.email = emailAddresses.find(
-				(email: { id: string }) => primaryEmailAddressId === email?.id,
+				(email: { id: string }) => primaryEmailAddressId === email.id,
 			)?.email_address
 		}
 
-		userInfo.picture = userData?.image_url
+		userInfo.picture = userData.image_url
 
 		// Fetch organization memberships separately
 		try {
@@ -444,51 +499,38 @@ export class AuthService extends EventEmitter<AuthServiceEvents> {
 	}
 
 	private async clerkGetOrganizationMemberships(): Promise<CloudOrganizationMembership[]> {
-		const response = await axios.get(`${getClerkBaseUrl()}/v1/me/organization_memberships`, {
+		const response = await fetch(`${getClerkBaseUrl()}/v1/me/organization_memberships`, {
 			headers: {
 				Authorization: `Bearer ${this.credentials!.clientToken}`,
 				"User-Agent": this.userAgent(),
 			},
+			signal: AbortSignal.timeout(10000),
 		})
 
-		// The response structure is: { response: [...] }
-		// Extract the organization memberships from the response.response array
-		return response.data?.response || []
+		return clerkOrganizationMembershipsSchema.parse(await response.json()).response
 	}
 
 	private async clerkLogout(credentials: AuthCredentials): Promise<void> {
 		const formData = new URLSearchParams()
 		formData.append("_is_native", "1")
 
-		await axios.post(`${getClerkBaseUrl()}/v1/client/sessions/${credentials.sessionId}/remove`, formData, {
+		const response = await fetch(`${getClerkBaseUrl()}/v1/client/sessions/${credentials.sessionId}/remove`, {
+			method: "POST",
 			headers: {
+				"Content-Type": "application/x-www-form-urlencoded",
 				Authorization: `Bearer ${credentials.clientToken}`,
 				"User-Agent": this.userAgent(),
 			},
+			body: formData.toString(),
+			signal: AbortSignal.timeout(10000),
 		})
+
+		if (!response.ok) {
+			throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+		}
 	}
 
 	private userAgent(): string {
 		return getUserAgent(this.context)
-	}
-
-	private static _instance: AuthService | null = null
-
-	static get instance() {
-		if (!this._instance) {
-			throw new Error("AuthService not initialized")
-		}
-
-		return this._instance
-	}
-
-	static async createInstance(context: vscode.ExtensionContext, log?: (...args: unknown[]) => void) {
-		if (this._instance) {
-			throw new Error("AuthService instance already created")
-		}
-
-		this._instance = new AuthService(context, log)
-		await this._instance.initialize()
-		return this._instance
 	}
 }
