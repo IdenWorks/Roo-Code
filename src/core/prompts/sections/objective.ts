@@ -1,4 +1,3 @@
-import { EXPERIMENT_IDS, experiments } from "../../../shared/experiments"
 import { CodeIndexManager } from "../../../services/code-index/manager"
 
 export function getObjectiveSection(
@@ -14,13 +13,6 @@ export function getObjectiveSection(
 	const codebaseSearchInstruction = isCodebaseSearchAvailable
 		? "First, if the task involves understanding existing code or functionality, you MUST use the `codebase_search` tool to search for relevant code based on the task's intent BEFORE using any other search or file exploration tools. Then, "
 		: "First, "
-
-	// Check if command execution is disabled via experiment
-	const isCommandDisabled = experimentsConfig && experimentsConfig[EXPERIMENT_IDS.DISABLE_COMPLETION_COMMAND]
-
-	const commandInstruction = !isCommandDisabled
-		? " You may also provide a CLI command to showcase the result of your task; this can be particularly useful for web development tasks, where you can run e.g. \`open index.html\` to show the website you've built."
-		: ""
 
 	return `====
 
@@ -47,6 +39,6 @@ You accomplish a given task iteratively, breaking it down into clear steps and w
   * **Edge Cases**: Handle missing git repo (\`git init\`), missing remote, existing branches (\`git checkout [branch]\`), merge conflicts, and missing GitHub CLI
   * **Branch Naming**: Use descriptive names like \`otto/feat/add-authentication\`, \`otto/fix/resolve-login-bug\`, \`otto/refactor/update-api\`
   * **Commit Messages**: Use conventional format: \`type: description\` (feat, fix, docs, style, refactor, test, chore)
-5. Once you've completed the user's task, you must use the attempt_completion tool to present the result of the task to the user.${commandInstruction}
+5. Once you've completed the user's task, you must use the attempt_completion tool to present the result of the task to the user.
 6. The user may provide feedback, which you can use to make improvements and try again. But DO NOT continue in pointless back and forth conversations, i.e. don't end your responses with questions or offers for further assistance.`
 }

@@ -11,6 +11,7 @@ import { RefreshTimer } from "./RefreshTimer"
 import { getUserAgent } from "./utils"
 
 export interface AuthServiceEvents {
+	"attempting-session": [data: { previousState: AuthState }]
 	"inactive-session": [data: { previousState: AuthState }]
 	"active-session": [data: { previousState: AuthState }]
 	"logged-out": [data: { previousState: AuthState }]
@@ -20,13 +21,14 @@ export interface AuthServiceEvents {
 const authCredentialsSchema = z.object({
 	clientToken: z.string().min(1, "Client token cannot be empty"),
 	sessionId: z.string().min(1, "Session ID cannot be empty"),
+	organizationId: z.string().nullable().optional(),
 })
 
 type AuthCredentials = z.infer<typeof authCredentialsSchema>
 
 const AUTH_STATE_KEY = "clerk-auth-state"
 
-type AuthState = "initializing" | "logged-out" | "active-session" | "inactive-session"
+type AuthState = "initializing" | "logged-out" | "active-session" | "attempting-session" | "inactive-session"
 
 const clerkSignInResponseSchema = z.object({
 	response: z.object({
@@ -93,6 +95,7 @@ export class AuthService extends EventEmitter<AuthServiceEvents> {
 	private credentials: AuthCredentials | null = null
 	private sessionToken: string | null = null
 	private userInfo: CloudUserInfo | null = null
+	private isFirstRefreshAttempt: boolean = false
 
 	constructor(context: vscode.ExtensionContext, log?: (...args: unknown[]) => void) {
 		super()
@@ -129,7 +132,7 @@ export class AuthService extends EventEmitter<AuthServiceEvents> {
 					this.credentials.clientToken !== credentials.clientToken ||
 					this.credentials.sessionId !== credentials.sessionId
 				) {
-					this.transitionToInactiveSession(credentials)
+					this.transitionToAttemptingSession(credentials)
 				}
 			} else {
 				if (this.state !== "logged-out") {
@@ -156,9 +159,24 @@ export class AuthService extends EventEmitter<AuthServiceEvents> {
 		this.log("[auth] Transitioned to logged-out state")
 	}
 
-	private transitionToInactiveSession(credentials: AuthCredentials): void {
+	private transitionToAttemptingSession(credentials: AuthCredentials): void {
 		this.credentials = credentials
 
+		const previousState = this.state
+		this.state = "attempting-session"
+
+		this.sessionToken = null
+		this.userInfo = null
+		this.isFirstRefreshAttempt = true
+
+		this.emit("attempting-session", { previousState })
+
+		this.timer.start()
+
+		this.log("[auth] Transitioned to attempting-session state")
+	}
+
+	private transitionToInactiveSession(): void {
 		const previousState = this.state
 		this.state = "inactive-session"
 
@@ -166,8 +184,6 @@ export class AuthService extends EventEmitter<AuthServiceEvents> {
 		this.userInfo = null
 
 		this.emit("inactive-session", { previousState })
-
-		this.timer.start()
 
 		this.log("[auth] Transitioned to inactive-session state")
 	}
@@ -205,7 +221,16 @@ export class AuthService extends EventEmitter<AuthServiceEvents> {
 
 		try {
 			const parsedJson = JSON.parse(credentialsJson)
-			return authCredentialsSchema.parse(parsedJson)
+			const credentials = authCredentialsSchema.parse(parsedJson)
+
+			// Migration: If no organizationId but we have userInfo, add it
+			if (credentials.organizationId === undefined && this.userInfo?.organizationId) {
+				credentials.organizationId = this.userInfo.organizationId
+				await this.storeCredentials(credentials)
+				this.log("[auth] Migrated credentials with organizationId")
+			}
+
+			return credentials
 		} catch (error) {
 			if (error instanceof z.ZodError) {
 				this.log("[auth] Invalid credentials format:", error.errors)
@@ -254,8 +279,13 @@ export class AuthService extends EventEmitter<AuthServiceEvents> {
 	 *
 	 * @param code The authorization code from the callback
 	 * @param state The state parameter from the callback
+	 * @param organizationId The organization ID from the callback (null for personal accounts)
 	 */
-	public async handleCallback(code: string | null, state: string | null): Promise<void> {
+	public async handleCallback(
+		code: string | null,
+		state: string | null,
+		organizationId?: string | null,
+	): Promise<void> {
 		if (!code || !state) {
 			vscode.window.showInformationMessage("Invalid Roo Code Cloud sign in url")
 			return
@@ -271,6 +301,9 @@ export class AuthService extends EventEmitter<AuthServiceEvents> {
 			}
 
 			const credentials = await this.clerkSignIn(code)
+
+			// Set organizationId (null for personal accounts)
+			credentials.organizationId = organizationId || null
 
 			await this.storeCredentials(credentials)
 
@@ -329,14 +362,25 @@ export class AuthService extends EventEmitter<AuthServiceEvents> {
 	/**
 	 * Check if the user is authenticated
 	 *
-	 * @returns True if the user is authenticated (has an active or inactive session)
+	 * @returns True if the user is authenticated (has an active, attempting, or inactive session)
 	 */
 	public isAuthenticated(): boolean {
-		return this.state === "active-session" || this.state === "inactive-session"
+		return (
+			this.state === "active-session" || this.state === "attempting-session" || this.state === "inactive-session"
+		)
 	}
 
 	public hasActiveSession(): boolean {
 		return this.state === "active-session"
+	}
+
+	/**
+	 * Check if the user has an active session or is currently attempting to acquire one
+	 *
+	 * @returns True if the user has an active session or is attempting to get one
+	 */
+	public hasOrIsAcquiringActiveSession(): boolean {
+		return this.state === "active-session" || this.state === "attempting-session"
 	}
 
 	/**
@@ -364,6 +408,9 @@ export class AuthService extends EventEmitter<AuthServiceEvents> {
 			if (error instanceof InvalidClientTokenError) {
 				this.log("[auth] Invalid/Expired client token: clearing credentials")
 				this.clearCredentials()
+			} else if (this.isFirstRefreshAttempt && this.state === "attempting-session") {
+				this.isFirstRefreshAttempt = false
+				this.transitionToInactiveSession()
 			}
 			this.log("[auth] Failed to refresh session", error)
 			throw error
@@ -386,6 +433,15 @@ export class AuthService extends EventEmitter<AuthServiceEvents> {
 	 */
 	public getUserInfo(): CloudUserInfo | null {
 		return this.userInfo
+	}
+
+	/**
+	 * Get the stored organization ID from credentials
+	 *
+	 * @returns The stored organization ID, null for personal accounts or if no credentials exist
+	 */
+	public getStoredOrganizationId(): string | null {
+		return this.credentials?.organizationId || null
 	}
 
 	private async clerkSignIn(ticket: string): Promise<AuthCredentials> {
@@ -424,6 +480,17 @@ export class AuthService extends EventEmitter<AuthServiceEvents> {
 	private async clerkCreateSessionToken(): Promise<string> {
 		const formData = new URLSearchParams()
 		formData.append("_is_native", "1")
+
+		// Handle 3 cases for organization_id:
+		// 1. Have an org id: organization_id=THE_ORG_ID
+		// 2. Have a personal account: organization_id= (empty string)
+		// 3. Don't know if you have an org id (old style credentials): don't send organization_id param at all
+		const organizationId = this.getStoredOrganizationId()
+		if (this.credentials?.organizationId !== undefined) {
+			// We have organization context info (either org id or personal account)
+			formData.append("organization_id", organizationId || "")
+		}
+		// If organizationId is undefined, don't send the param at all (old credentials)
 
 		const response = await fetch(`${getClerkBaseUrl()}/v1/client/sessions/${this.credentials!.sessionId}/tokens`, {
 			method: "POST",
@@ -476,26 +543,72 @@ export class AuthService extends EventEmitter<AuthServiceEvents> {
 
 		userInfo.picture = userData.image_url
 
-		// Fetch organization memberships separately
+		// Fetch organization info if user is in organization context
 		try {
-			const orgMemberships = await this.clerkGetOrganizationMemberships()
-			if (orgMemberships && orgMemberships.length > 0) {
-				// Get the first (or active) organization membership
-				const primaryOrgMembership = orgMemberships[0]
-				const organization = primaryOrgMembership?.organization
+			const storedOrgId = this.getStoredOrganizationId()
 
-				if (organization) {
-					userInfo.organizationId = organization.id
-					userInfo.organizationName = organization.name
-					userInfo.organizationRole = primaryOrgMembership.role
+			if (this.credentials?.organizationId !== undefined) {
+				// We have organization context info
+				if (storedOrgId !== null) {
+					// User is in organization context - fetch user's memberships and filter
+					const orgMemberships = await this.clerkGetOrganizationMemberships()
+					const userMembership = this.findOrganizationMembership(orgMemberships, storedOrgId)
+
+					if (userMembership) {
+						this.setUserOrganizationInfo(userInfo, userMembership)
+						this.log("[auth] User in organization context:", {
+							id: userMembership.organization.id,
+							name: userMembership.organization.name,
+							role: userMembership.role,
+						})
+					} else {
+						this.log("[auth] Warning: User not found in stored organization:", storedOrgId)
+					}
+				} else {
+					this.log("[auth] User in personal account context - not setting organization info")
+				}
+			} else {
+				// Old credentials without organization context - fetch organization info to determine context
+				const orgMemberships = await this.clerkGetOrganizationMemberships()
+				const primaryOrgMembership = this.findPrimaryOrganizationMembership(orgMemberships)
+
+				if (primaryOrgMembership) {
+					this.setUserOrganizationInfo(userInfo, primaryOrgMembership)
+					this.log("[auth] Legacy credentials: Found organization membership:", {
+						id: primaryOrgMembership.organization.id,
+						name: primaryOrgMembership.organization.name,
+						role: primaryOrgMembership.role,
+					})
+				} else {
+					this.log("[auth] Legacy credentials: No organization memberships found")
 				}
 			}
 		} catch (error) {
-			this.log("[auth] Failed to fetch organization memberships:", error)
+			this.log("[auth] Failed to fetch organization info:", error)
 			// Don't throw - organization info is optional
 		}
 
 		return userInfo
+	}
+
+	private findOrganizationMembership(
+		memberships: CloudOrganizationMembership[],
+		organizationId: string,
+	): CloudOrganizationMembership | undefined {
+		return memberships?.find((membership) => membership.organization.id === organizationId)
+	}
+
+	private findPrimaryOrganizationMembership(
+		memberships: CloudOrganizationMembership[],
+	): CloudOrganizationMembership | undefined {
+		return memberships && memberships.length > 0 ? memberships[0] : undefined
+	}
+
+	private setUserOrganizationInfo(userInfo: CloudUserInfo, membership: CloudOrganizationMembership): void {
+		userInfo.organizationId = membership.organization.id
+		userInfo.organizationName = membership.organization.name
+		userInfo.organizationRole = membership.role
+		userInfo.organizationImageUrl = membership.organization.image_url
 	}
 
 	private async clerkGetOrganizationMemberships(): Promise<CloudOrganizationMembership[]> {

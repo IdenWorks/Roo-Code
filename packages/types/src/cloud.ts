@@ -13,6 +13,7 @@ export interface CloudUserInfo {
 	organizationId?: string
 	organizationName?: string
 	organizationRole?: string
+	organizationImageUrl?: string
 }
 
 /**
@@ -124,6 +125,7 @@ export const ORGANIZATION_ALLOW_ALL: OrganizationAllowList = {
 export const ORGANIZATION_DEFAULT: OrganizationSettings = {
 	version: 0,
 	cloudSettings: {
+		recordTaskMessages: true,
 		enableTaskSharing: true,
 		taskShareExpirationDays: 30,
 	},
