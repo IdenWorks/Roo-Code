@@ -1,7 +1,10 @@
+import { safeWriteJson } from "../../utils/safeWriteJson"
 import * as path from "path"
-import fs from "fs/promises"
+import * as os from "os"
+import * as fs from "fs/promises"
 import pWaitFor from "p-wait-for"
 import * as vscode from "vscode"
+import * as yaml from "yaml"
 
 import { type Language, type ProviderSettings, type GlobalState, TelemetryEventName } from "@roo-code/types"
 import { CloudService } from "@roo-code/cloud"
@@ -27,12 +30,13 @@ import { fileExistsAtPath } from "../../utils/fs"
 import { playTts, setTtsEnabled, setTtsSpeed, stopTts } from "../../utils/tts"
 import { singleCompletionHandler } from "../../utils/single-completion-handler"
 import { searchCommits } from "../../utils/git"
-import { exportSettings, importSettings } from "../config/importExport"
+import { exportSettings, importSettingsWithFeedback } from "../config/importExport"
 import { getOpenAiModels } from "../../api/providers/openai"
 import { getVsCodeLmModels } from "../../api/providers/vscode-lm"
 import { openMention } from "../mentions"
 import { TelemetrySetting } from "../../shared/TelemetrySetting"
 import { getWorkspacePath } from "../../utils/path"
+import { ensureSettingsDirectoryExists } from "../../utils/globalContext"
 import { Mode, defaultModeSlug } from "../../shared/modes"
 import { getModels, flushModels } from "../../api/providers/fetchers/modelCache"
 import { GetModelsOptions } from "../../shared/api"
@@ -225,6 +229,7 @@ export const webviewMessageHandler = async (
 			break
 		case "shareCurrentTask":
 			const shareTaskId = provider.getCurrentCline()?.taskId
+			const clineMessages = provider.getCurrentCline()?.clineMessages
 			if (!shareTaskId) {
 				vscode.window.showErrorMessage(t("common:errors.share_no_active_task"))
 				break
@@ -232,7 +237,7 @@ export const webviewMessageHandler = async (
 
 			try {
 				const visibility = message.visibility || "organization"
-				const result = await CloudService.instance.shareTask(shareTaskId, visibility)
+				const result = await CloudService.instance.shareTask(shareTaskId, visibility, clineMessages)
 
 				if (result.success && result.shareUrl) {
 					// Show success notification
@@ -241,6 +246,13 @@ export const webviewMessageHandler = async (
 							? "common:info.public_share_link_copied"
 							: "common:info.organization_share_link_copied"
 					vscode.window.showInformationMessage(t(messageKey))
+
+					// Send success feedback to webview for inline display
+					await provider.postMessageToWebview({
+						type: "shareTaskSuccess",
+						visibility,
+						text: result.shareUrl,
+					})
 				} else {
 					// Handle error
 					const errorMessage = result.error || "Failed to create share link"
@@ -316,19 +328,12 @@ export const webviewMessageHandler = async (
 			provider.exportTaskWithId(message.text!)
 			break
 		case "importSettings": {
-			const result = await importSettings({
+			await importSettingsWithFeedback({
 				providerSettingsManager: provider.providerSettingsManager,
 				contextProxy: provider.contextProxy,
 				customModesManager: provider.customModesManager,
+				provider: provider,
 			})
-
-			if (result.success) {
-				provider.settingsImportedAt = Date.now()
-				await provider.postStateToWebview()
-				await vscode.window.showInformationMessage(t("common:info.settings_imported"))
-			} else if (result.error) {
-				await vscode.window.showErrorMessage(t("common:errors.settings_import_failed", { error: result.error }))
-			}
 
 			break
 		}
@@ -558,15 +563,22 @@ export const webviewMessageHandler = async (
 		case "cancelTask":
 			await provider.cancelTask()
 			break
-		case "allowedCommands":
-			await provider.context.globalState.update("allowedCommands", message.commands)
+		case "allowedCommands": {
+			// Validate and sanitize the commands array
+			const commands = message.commands ?? []
+			const validCommands = Array.isArray(commands)
+				? commands.filter((cmd) => typeof cmd === "string" && cmd.trim().length > 0)
+				: []
+
+			await updateGlobalState("allowedCommands", validCommands)
 
 			// Also update workspace settings.
 			await vscode.workspace
 				.getConfiguration(Package.name)
-				.update("allowedCommands", message.commands, vscode.ConfigurationTarget.Global)
+				.update("allowedCommands", validCommands, vscode.ConfigurationTarget.Global)
 
 			break
+		}
 		case "openCustomModesSettings": {
 			const customModesFilePath = await provider.customModesManager.getCustomModesFilePath()
 
@@ -600,7 +612,7 @@ export const webviewMessageHandler = async (
 				const exists = await fileExistsAtPath(mcpPath)
 
 				if (!exists) {
-					await fs.writeFile(mcpPath, JSON.stringify({ mcpServers: {} }, null, 2))
+					await safeWriteJson(mcpPath, { mcpServers: {} })
 				}
 
 				await openFile(mcpPath)
@@ -948,8 +960,27 @@ export const webviewMessageHandler = async (
 				const updatedPrompts = { ...existingPrompts, [message.promptMode]: message.customPrompt }
 				await updateGlobalState("customModePrompts", updatedPrompts)
 				const currentState = await provider.getStateToPostToWebview()
-				const stateWithPrompts = { ...currentState, customModePrompts: updatedPrompts }
+				const stateWithPrompts = {
+					...currentState,
+					customModePrompts: updatedPrompts,
+					hasOpenedModeSelector: currentState.hasOpenedModeSelector ?? false,
+				}
 				provider.postMessageToWebview({ type: "state", state: stateWithPrompts })
+
+				if (TelemetryService.hasInstance()) {
+					// Determine which setting was changed by comparing objects
+					const oldPrompt = existingPrompts[message.promptMode] || {}
+					const newPrompt = message.customPrompt
+					const changedSettings = Object.keys(newPrompt).filter(
+						(key) =>
+							JSON.stringify((oldPrompt as Record<string, unknown>)[key]) !==
+							JSON.stringify((newPrompt as Record<string, unknown>)[key]),
+					)
+
+					if (changedSettings.length > 0) {
+						TelemetryService.instance.captureModeSettingChanged(changedSettings[0])
+					}
+				}
 			}
 			break
 		case "deleteMessage": {
@@ -1072,8 +1103,31 @@ export const webviewMessageHandler = async (
 			await updateGlobalState("maxWorkspaceFiles", fileCount)
 			await provider.postStateToWebview()
 			break
+		case "alwaysAllowFollowupQuestions":
+			await updateGlobalState("alwaysAllowFollowupQuestions", message.bool ?? false)
+			await provider.postStateToWebview()
+			break
+		case "followupAutoApproveTimeoutMs":
+			await updateGlobalState("followupAutoApproveTimeoutMs", message.value)
+			await provider.postStateToWebview()
+			break
 		case "browserToolEnabled":
 			await updateGlobalState("browserToolEnabled", message.bool ?? true)
+			await provider.postStateToWebview()
+			break
+		case "codebaseIndexEnabled":
+			// Update the codebaseIndexConfig with the new enabled state
+			const currentCodebaseConfig = getGlobalState("codebaseIndexConfig") || {}
+			await updateGlobalState("codebaseIndexConfig", {
+				...currentCodebaseConfig,
+				codebaseIndexEnabled: message.bool ?? false,
+			})
+
+			// Notify the code index manager about the change
+			if (provider.codeIndexManager) {
+				await provider.codeIndexManager.handleSettingsChange()
+			}
+
 			await provider.postStateToWebview()
 			break
 		case "language":
@@ -1083,6 +1137,10 @@ export const webviewMessageHandler = async (
 			break
 		case "showRooIgnoredFiles":
 			await updateGlobalState("showRooIgnoredFiles", message.bool ?? true)
+			await provider.postStateToWebview()
+			break
+		case "hasOpenedModeSelector":
+			await updateGlobalState("hasOpenedModeSelector", message.bool ?? true)
 			await provider.postStateToWebview()
 			break
 		case "maxReadFileLine":
@@ -1414,30 +1472,298 @@ export const webviewMessageHandler = async (
 			break
 		case "updateCustomMode":
 			if (message.modeConfig) {
+				// Check if this is a new mode or an update to an existing mode
+				const existingModes = await provider.customModesManager.getCustomModes()
+				const isNewMode = !existingModes.some((mode) => mode.slug === message.modeConfig?.slug)
+
 				await provider.customModesManager.updateCustomMode(message.modeConfig.slug, message.modeConfig)
 				// Update state after saving the mode
 				const customModes = await provider.customModesManager.getCustomModes()
 				await updateGlobalState("customModes", customModes)
 				await updateGlobalState("mode", message.modeConfig.slug)
 				await provider.postStateToWebview()
+
+				// Track telemetry for custom mode creation or update
+				if (TelemetryService.hasInstance()) {
+					if (isNewMode) {
+						// This is a new custom mode
+						TelemetryService.instance.captureCustomModeCreated(
+							message.modeConfig.slug,
+							message.modeConfig.name,
+						)
+					} else {
+						// Determine which setting was changed by comparing objects
+						const existingMode = existingModes.find((mode) => mode.slug === message.modeConfig?.slug)
+						const changedSettings = existingMode
+							? Object.keys(message.modeConfig).filter(
+									(key) =>
+										JSON.stringify((existingMode as Record<string, unknown>)[key]) !==
+										JSON.stringify((message.modeConfig as Record<string, unknown>)[key]),
+								)
+							: []
+
+						if (changedSettings.length > 0) {
+							TelemetryService.instance.captureModeSettingChanged(changedSettings[0])
+						}
+					}
+				}
 			}
 			break
 		case "deleteCustomMode":
 			if (message.slug) {
-				const answer = await vscode.window.showInformationMessage(
-					t("common:confirmation.delete_custom_mode"),
-					{ modal: true },
-					t("common:answers.yes"),
-				)
+				// Get the mode details to determine source and rules folder path
+				const customModes = await provider.customModesManager.getCustomModes()
+				const modeToDelete = customModes.find((mode) => mode.slug === message.slug)
 
-				if (answer !== t("common:answers.yes")) {
+				if (!modeToDelete) {
 					break
 				}
 
+				// Determine the scope based on source (project or global)
+				const scope = modeToDelete.source || "global"
+
+				// Determine the rules folder path
+				let rulesFolderPath: string
+				if (scope === "project") {
+					const workspacePath = getWorkspacePath()
+					if (workspacePath) {
+						rulesFolderPath = path.join(workspacePath, ".roo", `rules-${message.slug}`)
+					} else {
+						rulesFolderPath = path.join(".roo", `rules-${message.slug}`)
+					}
+				} else {
+					// Global scope - use OS home directory
+					const homeDir = os.homedir()
+					rulesFolderPath = path.join(homeDir, ".roo", `rules-${message.slug}`)
+				}
+
+				// Check if the rules folder exists
+				const rulesFolderExists = await fileExistsAtPath(rulesFolderPath)
+
+				// If this is a check request, send back the folder info
+				if (message.checkOnly) {
+					await provider.postMessageToWebview({
+						type: "deleteCustomModeCheck",
+						slug: message.slug,
+						rulesFolderPath: rulesFolderExists ? rulesFolderPath : undefined,
+					})
+					break
+				}
+
+				// Delete the mode
 				await provider.customModesManager.deleteCustomMode(message.slug)
+
+				// Delete the rules folder if it exists
+				if (rulesFolderExists) {
+					try {
+						await fs.rm(rulesFolderPath, { recursive: true, force: true })
+						provider.log(`Deleted rules folder for mode ${message.slug}: ${rulesFolderPath}`)
+					} catch (error) {
+						provider.log(`Failed to delete rules folder for mode ${message.slug}: ${error}`)
+						// Notify the user about the failure
+						vscode.window.showErrorMessage(
+							t("common:errors.delete_rules_folder_failed", {
+								rulesFolderPath,
+								error: error instanceof Error ? error.message : String(error),
+							}),
+						)
+						// Continue with mode deletion even if folder deletion fails
+					}
+				}
+
 				// Switch back to default mode after deletion
 				await updateGlobalState("mode", defaultModeSlug)
 				await provider.postStateToWebview()
+			}
+			break
+		case "exportMode":
+			if (message.slug) {
+				try {
+					// Get custom mode prompts to check if built-in mode has been customized
+					const customModePrompts = getGlobalState("customModePrompts") || {}
+					const customPrompt = customModePrompts[message.slug]
+
+					// Export the mode with any customizations merged directly
+					const result = await provider.customModesManager.exportModeWithRules(message.slug, customPrompt)
+
+					if (result.success && result.yaml) {
+						// Get last used directory for export
+						const lastExportPath = getGlobalState("lastModeExportPath")
+						let defaultUri: vscode.Uri
+
+						if (lastExportPath) {
+							// Use the directory from the last export
+							const lastDir = path.dirname(lastExportPath)
+							defaultUri = vscode.Uri.file(path.join(lastDir, `${message.slug}-export.yaml`))
+						} else {
+							// Default to workspace or home directory
+							const workspaceFolders = vscode.workspace.workspaceFolders
+							if (workspaceFolders && workspaceFolders.length > 0) {
+								defaultUri = vscode.Uri.file(
+									path.join(workspaceFolders[0].uri.fsPath, `${message.slug}-export.yaml`),
+								)
+							} else {
+								defaultUri = vscode.Uri.file(`${message.slug}-export.yaml`)
+							}
+						}
+
+						// Show save dialog
+						const saveUri = await vscode.window.showSaveDialog({
+							defaultUri,
+							filters: {
+								"YAML files": ["yaml", "yml"],
+							},
+							title: "Save mode export",
+						})
+
+						if (saveUri && result.yaml) {
+							// Save the directory for next time
+							await updateGlobalState("lastModeExportPath", saveUri.fsPath)
+
+							// Write the file to the selected location
+							await fs.writeFile(saveUri.fsPath, result.yaml, "utf-8")
+
+							// Send success message to webview
+							provider.postMessageToWebview({
+								type: "exportModeResult",
+								success: true,
+								slug: message.slug,
+							})
+
+							// Show info message
+							vscode.window.showInformationMessage(t("common:info.mode_exported", { mode: message.slug }))
+						} else {
+							// User cancelled the save dialog
+							provider.postMessageToWebview({
+								type: "exportModeResult",
+								success: false,
+								error: "Export cancelled",
+								slug: message.slug,
+							})
+						}
+					} else {
+						// Send error message to webview
+						provider.postMessageToWebview({
+							type: "exportModeResult",
+							success: false,
+							error: result.error,
+							slug: message.slug,
+						})
+					}
+				} catch (error) {
+					const errorMessage = error instanceof Error ? error.message : String(error)
+					provider.log(`Failed to export mode ${message.slug}: ${errorMessage}`)
+
+					// Send error message to webview
+					provider.postMessageToWebview({
+						type: "exportModeResult",
+						success: false,
+						error: errorMessage,
+						slug: message.slug,
+					})
+				}
+			}
+			break
+		case "importMode":
+			try {
+				// Get last used directory for import
+				const lastImportPath = getGlobalState("lastModeImportPath")
+				let defaultUri: vscode.Uri | undefined
+
+				if (lastImportPath) {
+					// Use the directory from the last import
+					const lastDir = path.dirname(lastImportPath)
+					defaultUri = vscode.Uri.file(lastDir)
+				} else {
+					// Default to workspace or home directory
+					const workspaceFolders = vscode.workspace.workspaceFolders
+					if (workspaceFolders && workspaceFolders.length > 0) {
+						defaultUri = vscode.Uri.file(workspaceFolders[0].uri.fsPath)
+					}
+				}
+
+				// Show file picker to select YAML file
+				const fileUri = await vscode.window.showOpenDialog({
+					canSelectFiles: true,
+					canSelectFolders: false,
+					canSelectMany: false,
+					defaultUri,
+					filters: {
+						"YAML files": ["yaml", "yml"],
+					},
+					title: "Select mode export file to import",
+				})
+
+				if (fileUri && fileUri[0]) {
+					// Save the directory for next time
+					await updateGlobalState("lastModeImportPath", fileUri[0].fsPath)
+
+					// Read the file content
+					const yamlContent = await fs.readFile(fileUri[0].fsPath, "utf-8")
+
+					// Import the mode with the specified source level
+					const result = await provider.customModesManager.importModeWithRules(
+						yamlContent,
+						message.source || "project", // Default to project if not specified
+					)
+
+					if (result.success) {
+						// Update state after importing
+						const customModes = await provider.customModesManager.getCustomModes()
+						await updateGlobalState("customModes", customModes)
+						await provider.postStateToWebview()
+
+						// Send success message to webview
+						provider.postMessageToWebview({
+							type: "importModeResult",
+							success: true,
+						})
+
+						// Show success message
+						vscode.window.showInformationMessage(t("common:info.mode_imported"))
+					} else {
+						// Send error message to webview
+						provider.postMessageToWebview({
+							type: "importModeResult",
+							success: false,
+							error: result.error,
+						})
+
+						// Show error message
+						vscode.window.showErrorMessage(t("common:errors.mode_import_failed", { error: result.error }))
+					}
+				} else {
+					// User cancelled the file dialog - reset the importing state
+					provider.postMessageToWebview({
+						type: "importModeResult",
+						success: false,
+						error: "cancelled",
+					})
+				}
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.log(`Failed to import mode: ${errorMessage}`)
+
+				// Send error message to webview
+				provider.postMessageToWebview({
+					type: "importModeResult",
+					success: false,
+					error: errorMessage,
+				})
+
+				// Show error message
+				vscode.window.showErrorMessage(t("common:errors.mode_import_failed", { error: errorMessage }))
+			}
+			break
+		case "checkRulesDirectory":
+			if (message.slug) {
+				const hasContent = await provider.customModesManager.checkRulesDirectoryHasContent(message.slug)
+
+				provider.postMessageToWebview({
+					type: "checkRulesDirectoryResult",
+					slug: message.slug,
+					hasContent: hasContent,
+				})
 			}
 			break
 		case "humanRelayResponse":
@@ -1493,43 +1819,113 @@ export const webviewMessageHandler = async (
 
 			break
 		}
-		case "codebaseIndexConfig": {
-			const codebaseIndexConfig = message.values ?? {
-				codebaseIndexEnabled: false,
-				codebaseIndexQdrantUrl: "http://localhost:6333",
-				codebaseIndexEmbedderProvider: "openai",
-				codebaseIndexEmbedderBaseUrl: "",
-				codebaseIndexEmbedderModelId: "",
+
+		case "saveCodeIndexSettingsAtomic": {
+			if (!message.codeIndexSettings) {
+				break
 			}
-			await updateGlobalState("codebaseIndexConfig", codebaseIndexConfig)
+
+			const settings = message.codeIndexSettings
 
 			try {
-				if (provider.codeIndexManager) {
-					await provider.codeIndexManager.handleExternalSettingsChange()
+				// Save global state settings atomically (without codebaseIndexEnabled which is now in global settings)
+				const currentConfig = getGlobalState("codebaseIndexConfig") || {}
+				const globalStateConfig = {
+					...currentConfig,
+					codebaseIndexQdrantUrl: settings.codebaseIndexQdrantUrl,
+					codebaseIndexEmbedderProvider: settings.codebaseIndexEmbedderProvider,
+					codebaseIndexEmbedderBaseUrl: settings.codebaseIndexEmbedderBaseUrl,
+					codebaseIndexEmbedderModelId: settings.codebaseIndexEmbedderModelId,
+					codebaseIndexOpenAiCompatibleBaseUrl: settings.codebaseIndexOpenAiCompatibleBaseUrl,
+					codebaseIndexOpenAiCompatibleModelDimension: settings.codebaseIndexOpenAiCompatibleModelDimension,
+					codebaseIndexSearchMaxResults: settings.codebaseIndexSearchMaxResults,
+					codebaseIndexSearchMinScore: settings.codebaseIndexSearchMinScore,
+				}
 
-					// If now configured and enabled, start indexing automatically
+				// Save global state first
+				await updateGlobalState("codebaseIndexConfig", globalStateConfig)
+
+				// Save secrets directly using context proxy
+				if (settings.codeIndexOpenAiKey !== undefined) {
+					await provider.contextProxy.storeSecret("codeIndexOpenAiKey", settings.codeIndexOpenAiKey)
+				}
+				if (settings.codeIndexQdrantApiKey !== undefined) {
+					await provider.contextProxy.storeSecret("codeIndexQdrantApiKey", settings.codeIndexQdrantApiKey)
+				}
+				if (settings.codebaseIndexOpenAiCompatibleApiKey !== undefined) {
+					await provider.contextProxy.storeSecret(
+						"codebaseIndexOpenAiCompatibleApiKey",
+						settings.codebaseIndexOpenAiCompatibleApiKey,
+					)
+				}
+				if (settings.codebaseIndexGeminiApiKey !== undefined) {
+					await provider.contextProxy.storeSecret(
+						"codebaseIndexGeminiApiKey",
+						settings.codebaseIndexGeminiApiKey,
+					)
+				}
+
+				// Verify secrets are actually stored
+				const storedOpenAiKey = provider.contextProxy.getSecret("codeIndexOpenAiKey")
+
+				// Notify code index manager of changes
+				if (provider.codeIndexManager) {
+					await provider.codeIndexManager.handleSettingsChange()
+
+					// Auto-start indexing if now enabled and configured
 					if (provider.codeIndexManager.isFeatureEnabled && provider.codeIndexManager.isFeatureConfigured) {
 						if (!provider.codeIndexManager.isInitialized) {
 							await provider.codeIndexManager.initialize(provider.contextProxy)
 						}
-						// Start indexing in background (no await)
 						provider.codeIndexManager.startIndexing()
 					}
 				}
-			} catch (error) {
-				provider.log(
-					`[CodeIndexManager] Error during background CodeIndexManager configuration/indexing: ${error.message || error}`,
-				)
-			}
 
-			await provider.postStateToWebview()
+				// Send success response
+				await provider.postMessageToWebview({
+					type: "codeIndexSettingsSaved",
+					success: true,
+					settings: globalStateConfig,
+				})
+
+				// Update webview state
+				await provider.postStateToWebview()
+			} catch (error) {
+				provider.log(`Error saving code index settings: ${error.message || error}`)
+				await provider.postMessageToWebview({
+					type: "codeIndexSettingsSaved",
+					success: false,
+					error: error.message || "Failed to save settings",
+				})
+			}
 			break
 		}
+
 		case "requestIndexingStatus": {
 			const status = provider.codeIndexManager!.getCurrentStatus()
 			provider.postMessageToWebview({
 				type: "indexingStatusUpdate",
 				values: status,
+			})
+			break
+		}
+		case "requestCodeIndexSecretStatus": {
+			// Check if secrets are set using the VSCode context directly for async access
+			const hasOpenAiKey = !!(await provider.context.secrets.get("codeIndexOpenAiKey"))
+			const hasQdrantApiKey = !!(await provider.context.secrets.get("codeIndexQdrantApiKey"))
+			const hasOpenAiCompatibleApiKey = !!(await provider.context.secrets.get(
+				"codebaseIndexOpenAiCompatibleApiKey",
+			))
+			const hasGeminiApiKey = !!(await provider.context.secrets.get("codebaseIndexGeminiApiKey"))
+
+			provider.postMessageToWebview({
+				type: "codeIndexSecretStatus",
+				values: {
+					hasOpenAiKey,
+					hasQdrantApiKey,
+					hasOpenAiCompatibleApiKey,
+					hasGeminiApiKey,
+				},
 			})
 			break
 		}
@@ -1602,6 +1998,7 @@ export const webviewMessageHandler = async (
 					)
 					await provider.postStateToWebview()
 					console.log(`Marketplace item installed and config file opened: ${configFilePath}`)
+
 					// Send success message to webview
 					provider.postMessageToWebview({
 						type: "marketplaceInstallResult",
@@ -1654,7 +2051,11 @@ export const webviewMessageHandler = async (
 
 		case "switchTab": {
 			if (message.tab) {
-				// Send a message to the webview to switch to the specified tab
+				// Capture tab shown event for all switchTab messages (which are user-initiated)
+				if (TelemetryService.hasInstance()) {
+					TelemetryService.instance.captureTabShown(message.tab)
+				}
+
 				await provider.postMessageToWebview({ type: "action", action: "switchTab", tab: message.tab })
 			}
 			break

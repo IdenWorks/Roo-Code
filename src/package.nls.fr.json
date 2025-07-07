@@ -9,6 +9,7 @@
 	"command.openInNewTab.title": "Ouvrir dans un Nouvel Onglet",
 	"command.focusInput.title": "Focus sur le Champ de Saisie",
 	"command.setCustomStoragePath.title": "Définir le Chemin de Stockage Personnalisé",
+	"command.importSettings.title": "Importer les Paramètres",
 	"command.terminal.addToContext.title": "Ajouter le Contenu du Terminal au Contexte",
 	"command.terminal.fixCommand.title": "Corriger cette Commande",
 	"command.terminal.explainCommand.title": "Expliquer cette Commande",
@@ -30,6 +31,6 @@
 	"settings.vsCodeLmModelSelector.vendor.description": "Le fournisseur du modèle de langage (ex: copilot)",
 	"settings.vsCodeLmModelSelector.family.description": "La famille du modèle de langage (ex: gpt-4)",
 	"settings.customStoragePath.description": "Chemin de stockage personnalisé. Laisser vide pour utiliser l'emplacement par défaut. Prend en charge les chemins absolus (ex: 'D:\\RooCodeStorage')",
-	"settings.rooCodeCloudEnabled.description": "Activer Roo Code Cloud.",
-	"settings.enableCodeActions.description": "Activer les correctifs rapides de Roo Code."
+	"settings.enableCodeActions.description": "Activer les correctifs rapides de Roo Code.",
+	"settings.autoImportSettingsPath.description": "Chemin d'accès à un fichier de configuration RooCode à importer automatiquement au démarrage de l'extension. Prend en charge les chemins absolus et les chemins relatifs au répertoire de base (par exemple, '~/Documents/roo-code-settings.json'). Laisser vide pour désactiver l'importation automatique."
 }

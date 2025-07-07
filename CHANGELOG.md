@@ -1,5 +1,82 @@
 # Roo Code Changelog
 
+## [3.22.6] - 2025-07-02
+
+- Add timer-based auto approve for follow up questions (thanks @liwilliam2021!)
+- Add import/export modes functionality
+- Add persistent version indicator on chat screen
+- Add automatic configuration import on extension startup (thanks @takakoutso!)
+- Add user-configurable search score threshold slider for semantic search (thanks @hannesrudolph!)
+- Add default headers and testing for litellm fetcher (thanks @andrewshu2000!)
+- Fix consistent cancellation error messages for thinking vs streaming phases
+- Fix AWS Bedrock cross-region inference profile mapping (thanks @KevinZhao!)
+- Fix URL loading timeout issues in @ mentions (thanks @MuriloFP!)
+- Fix API retry exponential backoff capped at 10 minutes (thanks @MuriloFP!)
+- Fix Qdrant URL field auto-filling with default value (thanks @SannidhyaSah!)
+- Fix profile context condensation threshold (thanks @PaperBoardOfficial!)
+- Fix apply_diff tool documentation for multi-file capabilities
+- Fix cache files excluded from rules compilation (thanks @MuriloFP!)
+- Add streamlined extension installation and documentation (thanks @devxpain!)
+- Prevent Architect mode from providing time estimates
+- Remove context size from environment details
+- Change default mode to architect for new installations
+- Suppress Mermaid error rendering
+- Improve Mermaid buttons with light background in light mode (thanks @chrarnoldus!)
+- Add .vscode/ to write-protected files/directories
+- Update AWS Bedrock cross-region inference profile mapping (thanks @KevinZhao!)
+
+## [3.22.5] - 2025-06-28
+
+- Remove Gemini CLI provider while we work with Google on a better integration
+
+## [3.22.4] - 2025-06-27
+
+- Fix: resolve E2BIG error by passing large prompts via stdin to Claude CLI (thanks @Fovty!)
+- Add optional mode suggestions to follow-up questions
+- Fix: move StandardTooltip inside PopoverTrigger in ShareButton (thanks @daniel-lxs!)
+
+## [3.22.3] - 2025-06-27
+
+- Restore JSON backwards compatibility for .roomodes files (thanks @daniel-lxs!)
+
+## [3.22.2] - 2025-06-27
+
+- Fix: eliminate XSS vulnerability in CodeBlock component (thanks @KJ7LNW!)
+- Fix terminal keyboard shortcut error when adding content to context (thanks @MuriloFP!)
+- Fix checkpoint popover not opening due to StandardTooltip wrapper conflict (thanks @daniel-lxs!)
+- Fix(i18n): correct gemini cli error translation paths (thanks @daniel-lxs!)
+- Code Index (Qdrant) recreate services when change configurations (thanks @catrielmuller!)
+
+## [3.22.1] - 2025-06-26
+
+- Add Gemini CLI provider (thanks Cline!)
+- Fix undefined mcp command (thanks @qdaxb!)
+- Use upstream_inference_cost for OpenRouter BYOK cost calculation and show cached token count (thanks @chrarnoldus!)
+- Update maxTokens value for qwen/qwen3-32b model on Groq (thanks @KanTakahiro!)
+- Standardize tooltip delays to 300ms
+
+## [3.22.0] - 2025-06-25
+
+- Add 1-click task sharing
+- Add support for loading rules from a global .roo directory (thanks @samhvw8!)
+- Modes selector improvements (thanks @brunobergher!)
+- Use safeWriteJson for all JSON file writes to avoid task history corruption (thanks @KJ7LNW!)
+- Improve YAML error handling when editing modes
+- Register importSettings as VSCode command (thanks @shivamd1810!)
+- Add default task names for empty tasks (thanks @daniel-lxs!)
+- Improve translation workflow to avoid unnecessary file reads (thanks @KJ7LNW!)
+- Allow write_to_file to handle newline-only and empty content (thanks @Githubguy132010!)
+- Address multiple memory leaks in CodeBlock component (thanks @kiwina!)
+- Memory cleanup (thanks @xyOz-dev!)
+- Fix port handling bug in code indexing for HTTPS URLs (thanks @benashby!)
+- Improve Bedrock error handling for throttling and streaming contexts
+- Handle long Claude code messages (thanks @daniel-lxs!)
+- Fixes to Claude Code caching and image upload
+- Disable reasoning budget UI controls for Claude Code provider
+- Remove temperature parameter for Azure OpenAI reasoning models (thanks @ExactDoug!)
+- Allowed commands import/export (thanks @catrielmuller!)
+- Add VS Code setting to disable quick fix context actions (thanks @OlegOAndreev!)
+
 ## [3.21.5] - 2025-06-23
 
 - Fix Qdrant URL prefix handling for QdrantClient initialization (thanks @CW-B-W!)
