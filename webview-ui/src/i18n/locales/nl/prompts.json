@@ -4,6 +4,8 @@
 	"modes": {
 		"title": "Modi",
 		"createNewMode": "Nieuwe modus aanmaken",
+		"importMode": "Modus importeren",
+		"noMatchFound": "Geen modi gevonden",
 		"editModesConfig": "Modusconfiguratie bewerken",
 		"editGlobalModes": "Globale modi bewerken",
 		"editProjectModes": "Projectmodi bewerken (.roomodes)",
@@ -34,6 +36,11 @@
 		"resetToDefault": "Terugzetten naar standaard",
 		"description": "Definieer Roo's expertise en persoonlijkheid voor deze modus. Deze beschrijving bepaalt hoe Roo zich presenteert en taken benadert."
 	},
+	"description": {
+		"title": "Korte beschrijving (voor mensen)",
+		"resetToDefault": "Terugzetten naar standaardbeschrijving",
+		"description": "Een korte beschrijving die wordt getoond in de modusselectie dropdown."
+	},
 	"whenToUse": {
 		"title": "Wanneer te gebruiken (optioneel)",
 		"description": "Beschrijf wanneer deze modus gebruikt moet worden. Dit helpt de Orchestrator om de juiste modus voor een taak te kiezen.",
@@ -44,6 +51,28 @@
 		"resetToDefault": "Terugzetten naar standaard",
 		"description": "Voeg gedragsrichtlijnen toe die specifiek zijn voor de modus {{modeName}}.",
 		"loadFromFile": "Modusspecifieke instructies voor {{mode}} kunnen ook worden geladen uit de map <span>.roo/rules-{{slug}}/</span> in je werkruimte (.roorules-{{slug}} en .clinerules-{{slug}} zijn verouderd en werken binnenkort niet meer)."
+	},
+	"exportMode": {
+		"title": "Modus exporteren",
+		"description": "Exporteer deze modus naar een YAML-bestand met alle regels inbegrepen voor eenvoudig delen met anderen.",
+		"export": "Modus exporteren",
+		"exporting": "Exporteren..."
+	},
+	"importMode": {
+		"selectLevel": "Kies waar je deze modus wilt importeren:",
+		"import": "Importeren",
+		"importing": "Importeren...",
+		"global": {
+			"label": "Globaal niveau",
+			"description": "Beschikbaar in alle projecten. Regels worden samengevoegd in aangepaste instructies."
+		},
+		"project": {
+			"label": "Projectniveau",
+			"description": "Alleen beschikbaar in deze werkruimte. Als de geëxporteerde modus regelbestanden bevatte, worden deze opnieuw gemaakt in de map .roo/rules-{slug}/."
+		}
+	},
+	"advanced": {
+		"title": "Geavanceerd"
 	},
 	"globalCustomInstructions": {
 		"title": "Aangepaste instructies voor alle modi",
@@ -145,6 +174,10 @@
 			"label": "Beschikbare tools",
 			"description": "Selecteer welke tools deze modus kan gebruiken."
 		},
+		"description": {
+			"label": "Korte beschrijving (voor mensen)",
+			"description": "Een korte beschrijving die wordt getoond in de modusselectie dropdown."
+		},
 		"customInstructions": {
 			"label": "Aangepaste instructies (optioneel)",
 			"description": "Voeg gedragsrichtlijnen toe die specifiek zijn voor deze modus."
@@ -155,5 +188,13 @@
 		},
 		"deleteMode": "Modus verwijderen"
 	},
-	"allFiles": "alle bestanden"
+	"allFiles": "alle bestanden",
+	"deleteMode": {
+		"title": "Modus verwijderen",
+		"message": "Weet je zeker dat je de modus \"{{modeName}}\" wilt verwijderen?",
+		"rulesFolder": "Deze modus heeft een regelmap op {{folderPath}} die ook wordt verwijderd.",
+		"descriptionNoRules": "Weet je zeker dat je deze aangepaste modus wilt verwijderen?",
+		"confirm": "Verwijderen",
+		"cancel": "Annuleren"
+	}
 }
