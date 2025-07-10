@@ -72,6 +72,7 @@
 		"qdrantKeyLabel": "Qdrant 密钥：",
 		"qdrantApiKeyLabel": "Qdrant API 密钥",
 		"qdrantApiKeyPlaceholder": "输入你的 Qdrant API 密钥（可选）",
+		"setupConfigLabel": "设置",
 		"startIndexingButton": "开始",
 		"clearIndexDataButton": "清除索引",
 		"unsavedSettingsMessage": "请先保存设置再开始索引过程。",
@@ -161,6 +162,10 @@
 			"allowedCommandsDescription": "当\"自动批准命令行操作\"启用时可以自动执行的命令前缀。添加 * 以允许所有命令（谨慎使用）。",
 			"commandPlaceholder": "输入命令前缀（例如 'git '）",
 			"addButton": "添加"
+		},
+		"updateTodoList": {
+			"label": "待办",
+			"description": "无需批准即可自动更新待办清单"
 		},
 		"apiRequestLimit": {
 			"title": "最大请求数",

@@ -72,6 +72,7 @@
 		"qdrantKeyLabel": "Clé Qdrant :",
 		"qdrantApiKeyLabel": "Clé API Qdrant",
 		"qdrantApiKeyPlaceholder": "Entrez votre clé API Qdrant (optionnel)",
+		"setupConfigLabel": "Configuration",
 		"startIndexingButton": "Démarrer",
 		"clearIndexDataButton": "Effacer l'index",
 		"unsavedSettingsMessage": "Merci d'enregistrer tes paramètres avant de démarrer le processus d'indexation.",
@@ -161,6 +162,10 @@
 			"allowedCommandsDescription": "Préfixes de commandes qui peuvent être auto-exécutés lorsque \"Toujours approuver les opérations d'exécution\" est activé. Ajoutez * pour autoriser toutes les commandes (à utiliser avec précaution).",
 			"commandPlaceholder": "Entrez le préfixe de commande (ex. 'git ')",
 			"addButton": "Ajouter"
+		},
+		"updateTodoList": {
+			"label": "Todo",
+			"description": "La liste de tâches est mise à jour automatiquement sans approbation"
 		},
 		"apiRequestLimit": {
 			"title": "Requêtes maximales",

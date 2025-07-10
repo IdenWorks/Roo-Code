@@ -81,6 +81,7 @@
 		"ollamaBaseUrlLabel": "Ollama ベースURL",
 		"qdrantApiKeyLabel": "Qdrant APIキー",
 		"qdrantApiKeyPlaceholder": "Qdrant APIキーを入力（オプション）",
+		"setupConfigLabel": "設定",
 		"ollamaUrlPlaceholder": "http://localhost:11434",
 		"openAiCompatibleBaseUrlPlaceholder": "https://api.example.com",
 		"modelDimensionPlaceholder": "1536",
@@ -161,6 +162,10 @@
 			"allowedCommandsDescription": "「実行操作を常に承認」が有効な場合に自動実行できるコマンドプレフィックス。すべてのコマンドを許可するには * を追加します（注意して使用してください）。",
 			"commandPlaceholder": "コマンドプレフィックスを入力（例：'git '）",
 			"addButton": "追加"
+		},
+		"updateTodoList": {
+			"label": "Todo",
+			"description": "承認なしで自動的にToDoリストを更新"
 		},
 		"apiRequestLimit": {
 			"title": "最大リクエスト数",

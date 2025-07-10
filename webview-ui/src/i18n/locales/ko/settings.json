@@ -81,6 +81,7 @@
 		"ollamaBaseUrlLabel": "Ollama 기본 URL",
 		"qdrantApiKeyLabel": "Qdrant API 키",
 		"qdrantApiKeyPlaceholder": "Qdrant API 키를 입력하세요 (선택사항)",
+		"setupConfigLabel": "설정",
 		"ollamaUrlPlaceholder": "http://localhost:11434",
 		"openAiCompatibleBaseUrlPlaceholder": "https://api.example.com",
 		"modelDimensionPlaceholder": "1536",
@@ -161,6 +162,10 @@
 			"allowedCommandsDescription": "\"실행 작업 항상 승인\"이 활성화되었을 때 자동 실행될 수 있는 명령 접두사. 모든 명령을 허용하려면 * 추가(주의해서 사용)",
 			"commandPlaceholder": "명령 접두사 입력(예: 'git ')",
 			"addButton": "추가"
+		},
+		"updateTodoList": {
+			"label": "Todo",
+			"description": "승인 없이 자동으로 할 일 목록이 업데이트됩니다"
 		},
 		"apiRequestLimit": {
 			"title": "최대 요청 수",

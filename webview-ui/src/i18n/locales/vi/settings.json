@@ -81,6 +81,7 @@
 		"ollamaBaseUrlLabel": "URL cơ sở Ollama",
 		"qdrantApiKeyLabel": "Khóa API Qdrant",
 		"qdrantApiKeyPlaceholder": "Nhập khóa API Qdrant của bạn (tùy chọn)",
+		"setupConfigLabel": "Cài đặt",
 		"ollamaUrlPlaceholder": "http://localhost:11434",
 		"openAiCompatibleBaseUrlPlaceholder": "https://api.example.com",
 		"modelDimensionPlaceholder": "1536",
@@ -161,6 +162,10 @@
 			"allowedCommandsDescription": "Tiền tố lệnh có thể được tự động thực thi khi \"Luôn phê duyệt các hoạt động thực thi\" được bật. Thêm * để cho phép tất cả các lệnh (sử dụng cẩn thận).",
 			"commandPlaceholder": "Nhập tiền tố lệnh (ví dụ: 'git ')",
 			"addButton": "Thêm"
+		},
+		"updateTodoList": {
+			"label": "Todo",
+			"description": "Danh sách việc cần làm được cập nhật tự động mà không cần phê duyệt"
 		},
 		"apiRequestLimit": {
 			"title": "Số lượng yêu cầu tối đa",

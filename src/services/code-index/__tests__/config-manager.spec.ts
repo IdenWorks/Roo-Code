@@ -96,10 +96,10 @@ describe("CodeIndexConfigManager", () => {
 				codebaseIndexEmbedderProvider: "openai-compatible",
 				codebaseIndexEmbedderBaseUrl: "",
 				codebaseIndexEmbedderModelId: "text-embedding-3-large",
+				codebaseIndexOpenAiCompatibleBaseUrl: "https://api.example.com/v1",
 			}
 			mockContextProxy.getGlobalState.mockImplementation((key: string) => {
 				if (key === "codebaseIndexConfig") return mockGlobalState
-				if (key === "codebaseIndexOpenAiCompatibleBaseUrl") return "https://api.example.com/v1"
 				return undefined
 			})
 
@@ -134,11 +134,11 @@ describe("CodeIndexConfigManager", () => {
 				codebaseIndexEmbedderProvider: "openai-compatible",
 				codebaseIndexEmbedderBaseUrl: "",
 				codebaseIndexEmbedderModelId: "custom-model",
+				codebaseIndexOpenAiCompatibleBaseUrl: "https://api.example.com/v1",
+				codebaseIndexEmbedderModelDimension: 1024,
 			}
 			mockContextProxy.getGlobalState.mockImplementation((key: string) => {
 				if (key === "codebaseIndexConfig") return mockGlobalState
-				if (key === "codebaseIndexOpenAiCompatibleBaseUrl") return "https://api.example.com/v1"
-				if (key === "codebaseIndexOpenAiCompatibleModelDimension") return 1024
 				return undefined
 			})
 			setupSecretMocks({
@@ -153,12 +153,12 @@ describe("CodeIndexConfigManager", () => {
 				isConfigured: true,
 				embedderProvider: "openai-compatible",
 				modelId: "custom-model",
+				modelDimension: 1024,
 				openAiOptions: { openAiNativeApiKey: "" },
 				ollamaOptions: { ollamaBaseUrl: "" },
 				openAiCompatibleOptions: {
 					baseUrl: "https://api.example.com/v1",
 					apiKey: "test-openai-compatible-key",
-					modelDimension: 1024,
 				},
 				qdrantUrl: "http://qdrant.local",
 				qdrantApiKey: "test-qdrant-key",
@@ -173,11 +173,11 @@ describe("CodeIndexConfigManager", () => {
 				codebaseIndexEmbedderProvider: "openai-compatible",
 				codebaseIndexEmbedderBaseUrl: "",
 				codebaseIndexEmbedderModelId: "custom-model",
+				codebaseIndexOpenAiCompatibleBaseUrl: "https://api.example.com/v1",
+				// modelDimension is not set
 			}
 			mockContextProxy.getGlobalState.mockImplementation((key: string) => {
 				if (key === "codebaseIndexConfig") return mockGlobalState
-				if (key === "codebaseIndexOpenAiCompatibleBaseUrl") return "https://api.example.com/v1"
-				if (key === "codebaseIndexOpenAiCompatibleModelDimension") return undefined
 				return undefined
 			})
 			setupSecretMocks({
@@ -197,6 +197,7 @@ describe("CodeIndexConfigManager", () => {
 				openAiCompatibleOptions: {
 					baseUrl: "https://api.example.com/v1",
 					apiKey: "test-openai-compatible-key",
+					// modelDimension is undefined when not set
 				},
 				qdrantUrl: "http://qdrant.local",
 				qdrantApiKey: "test-qdrant-key",
@@ -211,11 +212,11 @@ describe("CodeIndexConfigManager", () => {
 				codebaseIndexEmbedderProvider: "openai-compatible",
 				codebaseIndexEmbedderBaseUrl: "",
 				codebaseIndexEmbedderModelId: "custom-model",
+				codebaseIndexOpenAiCompatibleBaseUrl: "https://api.example.com/v1",
+				codebaseIndexEmbedderModelDimension: "invalid-dimension", // Invalid type
 			}
 			mockContextProxy.getGlobalState.mockImplementation((key: string) => {
 				if (key === "codebaseIndexConfig") return mockGlobalState
-				if (key === "codebaseIndexOpenAiCompatibleBaseUrl") return "https://api.example.com/v1"
-				if (key === "codebaseIndexOpenAiCompatibleModelDimension") return "invalid-dimension"
 				return undefined
 			})
 			setupSecretMocks({
@@ -230,13 +231,14 @@ describe("CodeIndexConfigManager", () => {
 				isConfigured: true,
 				embedderProvider: "openai-compatible",
 				modelId: "custom-model",
+				modelDimension: undefined, // Invalid dimension is converted to undefined
 				openAiOptions: { openAiNativeApiKey: "" },
 				ollamaOptions: { ollamaBaseUrl: "" },
 				openAiCompatibleOptions: {
 					baseUrl: "https://api.example.com/v1",
 					apiKey: "test-openai-compatible-key",
-					modelDimension: "invalid-dimension",
 				},
+				geminiOptions: undefined,
 				qdrantUrl: "http://qdrant.local",
 				qdrantApiKey: "test-qdrant-key",
 				searchMinScore: 0.4,
@@ -461,9 +463,9 @@ describe("CodeIndexConfigManager", () => {
 							codebaseIndexQdrantUrl: "http://qdrant.local",
 							codebaseIndexEmbedderProvider: "openai-compatible",
 							codebaseIndexEmbedderModelId: "text-embedding-3-small",
+							codebaseIndexOpenAiCompatibleBaseUrl: "https://old-api.example.com/v1",
 						}
 					}
-					if (key === "codebaseIndexOpenAiCompatibleBaseUrl") return "https://old-api.example.com/v1"
 					return undefined
 				})
 				setupSecretMocks({
@@ -481,9 +483,9 @@ describe("CodeIndexConfigManager", () => {
 							codebaseIndexQdrantUrl: "http://qdrant.local",
 							codebaseIndexEmbedderProvider: "openai-compatible",
 							codebaseIndexEmbedderModelId: "text-embedding-3-small",
+							codebaseIndexOpenAiCompatibleBaseUrl: "https://new-api.example.com/v1",
 						}
 					}
-					if (key === "codebaseIndexOpenAiCompatibleBaseUrl") return "https://new-api.example.com/v1"
 					return undefined
 				})
 
@@ -500,9 +502,9 @@ describe("CodeIndexConfigManager", () => {
 							codebaseIndexQdrantUrl: "http://qdrant.local",
 							codebaseIndexEmbedderProvider: "openai-compatible",
 							codebaseIndexEmbedderModelId: "text-embedding-3-small",
+							codebaseIndexOpenAiCompatibleBaseUrl: "https://api.example.com/v1",
 						}
 					}
-					if (key === "codebaseIndexOpenAiCompatibleBaseUrl") return "https://api.example.com/v1"
 					return undefined
 				})
 				setupSecretMocks({
@@ -531,10 +533,10 @@ describe("CodeIndexConfigManager", () => {
 							codebaseIndexQdrantUrl: "http://qdrant.local",
 							codebaseIndexEmbedderProvider: "openai-compatible",
 							codebaseIndexEmbedderModelId: "custom-model",
+							codebaseIndexOpenAiCompatibleBaseUrl: "https://api.example.com/v1",
+							codebaseIndexEmbedderModelDimension: 1024,
 						}
 					}
-					if (key === "codebaseIndexOpenAiCompatibleBaseUrl") return "https://api.example.com/v1"
-					if (key === "codebaseIndexOpenAiCompatibleModelDimension") return 1024
 					return undefined
 				})
 				setupSecretMocks({
@@ -552,10 +554,10 @@ describe("CodeIndexConfigManager", () => {
 							codebaseIndexQdrantUrl: "http://qdrant.local",
 							codebaseIndexEmbedderProvider: "openai-compatible",
 							codebaseIndexEmbedderModelId: "custom-model",
+							codebaseIndexOpenAiCompatibleBaseUrl: "https://api.example.com/v1",
+							codebaseIndexEmbedderModelDimension: 2048,
 						}
 					}
-					if (key === "codebaseIndexOpenAiCompatibleBaseUrl") return "https://api.example.com/v1"
-					if (key === "codebaseIndexOpenAiCompatibleModelDimension") return 2048
 					return undefined
 				})
 
@@ -572,10 +574,10 @@ describe("CodeIndexConfigManager", () => {
 							codebaseIndexQdrantUrl: "http://qdrant.local",
 							codebaseIndexEmbedderProvider: "openai-compatible",
 							codebaseIndexEmbedderModelId: "custom-model",
+							codebaseIndexOpenAiCompatibleBaseUrl: "https://api.example.com/v1",
+							codebaseIndexEmbedderModelDimension: 1024,
 						}
 					}
-					if (key === "codebaseIndexOpenAiCompatibleBaseUrl") return "https://api.example.com/v1"
-					if (key === "codebaseIndexOpenAiCompatibleModelDimension") return 1024
 					return undefined
 				})
 				setupSecretMocks({
@@ -593,11 +595,11 @@ describe("CodeIndexConfigManager", () => {
 							codebaseIndexQdrantUrl: "http://qdrant.local",
 							codebaseIndexEmbedderProvider: "openai-compatible",
 							codebaseIndexEmbedderModelId: "custom-model",
+							codebaseIndexOpenAiCompatibleBaseUrl: "https://api.example.com/v1",
+							codebaseIndexEmbedderModelDimension: 1024,
 							codebaseIndexSearchMinScore: 0.5, // Changed unrelated setting
 						}
 					}
-					if (key === "codebaseIndexOpenAiCompatibleBaseUrl") return "https://api.example.com/v1"
-					if (key === "codebaseIndexOpenAiCompatibleModelDimension") return 1024
 					return undefined
 				})
 
@@ -614,10 +616,10 @@ describe("CodeIndexConfigManager", () => {
 							codebaseIndexQdrantUrl: "http://qdrant.local",
 							codebaseIndexEmbedderProvider: "openai-compatible",
 							codebaseIndexEmbedderModelId: "custom-model",
+							codebaseIndexOpenAiCompatibleBaseUrl: "https://api.example.com/v1",
+							// modelDimension not set initially
 						}
 					}
-					if (key === "codebaseIndexOpenAiCompatibleBaseUrl") return "https://api.example.com/v1"
-					if (key === "codebaseIndexOpenAiCompatibleModelDimension") return undefined
 					return undefined
 				})
 				setupSecretMocks({
@@ -635,10 +637,10 @@ describe("CodeIndexConfigManager", () => {
 							codebaseIndexQdrantUrl: "http://qdrant.local",
 							codebaseIndexEmbedderProvider: "openai-compatible",
 							codebaseIndexEmbedderModelId: "custom-model",
+							codebaseIndexOpenAiCompatibleBaseUrl: "https://api.example.com/v1",
+							codebaseIndexEmbedderModelDimension: 1024,
 						}
 					}
-					if (key === "codebaseIndexOpenAiCompatibleBaseUrl") return "https://api.example.com/v1"
-					if (key === "codebaseIndexOpenAiCompatibleModelDimension") return 1024
 					return undefined
 				})
 
@@ -655,10 +657,10 @@ describe("CodeIndexConfigManager", () => {
 							codebaseIndexQdrantUrl: "http://qdrant.local",
 							codebaseIndexEmbedderProvider: "openai-compatible",
 							codebaseIndexEmbedderModelId: "custom-model",
+							codebaseIndexOpenAiCompatibleBaseUrl: "https://api.example.com/v1",
+							codebaseIndexEmbedderModelDimension: 1024,
 						}
 					}
-					if (key === "codebaseIndexOpenAiCompatibleBaseUrl") return "https://api.example.com/v1"
-					if (key === "codebaseIndexOpenAiCompatibleModelDimension") return 1024
 					return undefined
 				})
 				setupSecretMocks({
@@ -676,10 +678,10 @@ describe("CodeIndexConfigManager", () => {
 							codebaseIndexQdrantUrl: "http://qdrant.local",
 							codebaseIndexEmbedderProvider: "openai-compatible",
 							codebaseIndexEmbedderModelId: "custom-model",
+							codebaseIndexOpenAiCompatibleBaseUrl: "https://api.example.com/v1",
+							// modelDimension removed
 						}
 					}
-					if (key === "codebaseIndexOpenAiCompatibleBaseUrl") return "https://api.example.com/v1"
-					if (key === "codebaseIndexOpenAiCompatibleModelDimension") return undefined
 					return undefined
 				})
 
@@ -807,10 +809,10 @@ describe("CodeIndexConfigManager", () => {
 								codebaseIndexQdrantUrl: "http://qdrant.local",
 								codebaseIndexEmbedderProvider: "openai-compatible",
 								codebaseIndexEmbedderModelId: "nomic-embed-code",
+								codebaseIndexOpenAiCompatibleBaseUrl: "https://api.example.com/v1",
 								// No codebaseIndexSearchMinScore
 							}
 						}
-						if (key === "codebaseIndexOpenAiCompatibleBaseUrl") return "https://api.example.com/v1"
 						return undefined
 					})
 					mockContextProxy.getSecret.mockImplementation((key: string) => {
@@ -1082,9 +1084,9 @@ describe("CodeIndexConfigManager", () => {
 						codebaseIndexEnabled: true,
 						codebaseIndexQdrantUrl: "http://qdrant.local",
 						codebaseIndexEmbedderProvider: "openai-compatible",
+						codebaseIndexOpenAiCompatibleBaseUrl: "https://api.example.com/v1",
 					}
 				}
-				if (key === "codebaseIndexOpenAiCompatibleBaseUrl") return "https://api.example.com/v1"
 				return undefined
 			})
 			setupSecretMocks({

@@ -81,6 +81,7 @@
 		"ollamaBaseUrlLabel": "URL base d'Ollama",
 		"qdrantApiKeyLabel": "Clau API de Qdrant",
 		"qdrantApiKeyPlaceholder": "Introduïu la vostra clau API de Qdrant (opcional)",
+		"setupConfigLabel": "Configuració",
 		"ollamaUrlPlaceholder": "http://localhost:11434",
 		"openAiCompatibleBaseUrlPlaceholder": "https://api.example.com",
 		"modelDimensionPlaceholder": "1536",
@@ -161,6 +162,10 @@
 			"allowedCommandsDescription": "Prefixos de comandes que poden ser executats automàticament quan \"Aprovar sempre operacions d'execució\" està habilitat. Afegeix * per permetre totes les comandes (usar amb precaució).",
 			"commandPlaceholder": "Introduïu prefix de comanda (ex. 'git ')",
 			"addButton": "Afegir"
+		},
+		"updateTodoList": {
+			"label": "Todo",
+			"description": "La llista de tasques es actualitza automàticament sense aprovació"
 		},
 		"apiRequestLimit": {
 			"title": "Màximes Sol·licituds",

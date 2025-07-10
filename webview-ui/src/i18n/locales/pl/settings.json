@@ -81,6 +81,7 @@
 		"ollamaBaseUrlLabel": "Bazowy URL Ollama",
 		"qdrantApiKeyLabel": "Klucz API Qdrant",
 		"qdrantApiKeyPlaceholder": "Wprowadź swój klucz API Qdrant (opcjonalnie)",
+		"setupConfigLabel": "Konfiguracja",
 		"ollamaUrlPlaceholder": "http://localhost:11434",
 		"openAiCompatibleBaseUrlPlaceholder": "https://api.example.com",
 		"modelDimensionPlaceholder": "1536",
@@ -161,6 +162,10 @@
 			"allowedCommandsDescription": "Prefiksy poleceń, które mogą być automatycznie wykonywane, gdy \"Zawsze zatwierdzaj operacje wykonania\" jest włączone. Dodaj * aby zezwolić na wszystkie polecenia (używaj z ostrożnością).",
 			"commandPlaceholder": "Wprowadź prefiks polecenia (np. 'git ')",
 			"addButton": "Dodaj"
+		},
+		"updateTodoList": {
+			"label": "Todo",
+			"description": "Lista zadań jest automatycznie aktualizowana bez zatwierdzenia"
 		},
 		"apiRequestLimit": {
 			"title": "Maksymalna liczba żądań",
