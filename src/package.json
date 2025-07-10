@@ -3,7 +3,7 @@
 	"displayName": "%extension.displayName%",
 	"description": "%extension.description%",
 	"publisher": "IdenWorks",
-	"version": "3.22.6",
+	"version": "3.23.6",
 	"icon": "assets/icons/icon.png",
 	"galleryBanner": {
 		"color": "#617A91",
@@ -74,6 +74,11 @@
 				"command": "roo-otto.plusButtonClicked",
 				"title": "%command.newTask.title%",
 				"icon": "$(add)"
+			},
+			{
+				"command": "roo-otto.promptsButtonClicked",
+				"title": "%command.prompts.title%",
+				"icon": "$(organization)"
 			},
 			{
 				"command": "roo-otto.mcpButtonClicked",
@@ -219,33 +224,38 @@
 					"when": "view == roo-otto.SidebarProvider"
 				},
 				{
-					"command": "roo-otto.mcpButtonClicked",
+					"command": "roo-otto.settingsButtonClicked",
 					"group": "navigation@2",
 					"when": "view == roo-otto.SidebarProvider"
 				},
 				{
-					"command": "roo-otto.marketplaceButtonClicked",
+					"command": "roo-otto.accountButtonClicked",
 					"group": "navigation@3",
 					"when": "view == roo-otto.SidebarProvider"
 				},
 				{
 					"command": "roo-otto.historyButtonClicked",
-					"group": "navigation@4",
+					"group": "overflow@1",
+					"when": "view == roo-otto.SidebarProvider"
+				},
+				{
+					"command": "roo-otto.marketplaceButtonClicked",
+					"group": "overflow@2",
+					"when": "view == roo-otto.SidebarProvider"
+				},
+				{
+					"command": "roo-otto.promptsButtonClicked",
+					"group": "overflow@3",
+					"when": "view == roo-otto.SidebarProvider"
+				},
+				{
+					"command": "roo-otto.mcpButtonClicked",
+					"group": "overflow@4",
 					"when": "view == roo-otto.SidebarProvider"
 				},
 				{
 					"command": "roo-otto.popoutButtonClicked",
-					"group": "navigation@5",
-					"when": "view == roo-otto.SidebarProvider"
-				},
-				{
-					"command": "roo-otto.accountButtonClicked",
-					"group": "navigation@6",
-					"when": "view == roo-otto.SidebarProvider"
-				},
-				{
-					"command": "roo-otto.settingsButtonClicked",
-					"group": "navigation@7",
+					"group": "overflow@5",
 					"when": "view == roo-otto.SidebarProvider"
 				}
 			],
@@ -256,28 +266,38 @@
 					"when": "activeWebviewPanelId == roo-otto.TabPanelProvider"
 				},
 				{
-					"command": "roo-otto.mcpButtonClicked",
+					"command": "roo-otto.settingsButtonClicked",
 					"group": "navigation@2",
 					"when": "activeWebviewPanelId == roo-otto.TabPanelProvider"
 				},
 				{
-					"command": "roo-otto.marketplaceButtonClicked",
+					"command": "roo-otto.accountButtonClicked",
 					"group": "navigation@3",
 					"when": "activeWebviewPanelId == roo-otto.TabPanelProvider"
 				},
 				{
 					"command": "roo-otto.historyButtonClicked",
-					"group": "navigation@4",
+					"group": "overflow@1",
 					"when": "activeWebviewPanelId == roo-otto.TabPanelProvider"
 				},
 				{
-					"command": "roo-otto.accountButtonClicked",
-					"group": "navigation@5",
+					"command": "roo-otto.marketplaceButtonClicked",
+					"group": "overflow@2",
 					"when": "activeWebviewPanelId == roo-otto.TabPanelProvider"
 				},
 				{
-					"command": "roo-otto.settingsButtonClicked",
-					"group": "navigation@6",
+					"command": "roo-otto.promptsButtonClicked",
+					"group": "overflow@3",
+					"when": "activeWebviewPanelId == roo-otto.TabPanelProvider"
+				},
+				{
+					"command": "roo-otto.mcpButtonClicked",
+					"group": "overflow@4",
+					"when": "activeWebviewPanelId == roo-otto.TabPanelProvider"
+				},
+				{
+					"command": "roo-otto.popoutButtonClicked",
+					"group": "overflow@5",
 					"when": "activeWebviewPanelId == roo-otto.TabPanelProvider"
 				}
 			]
@@ -348,7 +368,7 @@
 		"vsix": "mkdirp ../bin && vsce package --no-dependencies --out ../bin",
 		"publish:marketplace": "vsce publish --no-dependencies && ovsx publish --no-dependencies",
 		"watch:bundle": "pnpm bundle --watch",
-		"watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+		"watch:tsc": "cd .. && tsc --noEmit --watch --project src/tsconfig.json",
 		"clean": "rimraf README.md CHANGELOG.md LICENSE dist mock .turbo"
 	},
 	"dependencies": {

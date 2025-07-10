@@ -8,6 +8,7 @@ import OpenAI from "openai"
 
 import { OpenRouterHandler } from "../openrouter"
 import { ApiHandlerOptions } from "../../../shared/api"
+import { Package } from "../../../shared/package"
 
 // Mock dependencies
 vitest.mock("openai")
@@ -62,6 +63,7 @@ describe("OpenRouterHandler", () => {
 			defaultHeaders: {
 				"HTTP-Referer": "https://github.com/idenworks/roo-code",
 				"X-Title": "Roo Code for Otto",
+				"User-Agent": `RooCode/${Package.version}`,
 			},
 		})
 	})
