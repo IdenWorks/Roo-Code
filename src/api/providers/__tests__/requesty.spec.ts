@@ -5,6 +5,7 @@ import OpenAI from "openai"
 
 import { RequestyHandler } from "../requesty"
 import { ApiHandlerOptions } from "../../../shared/api"
+import { Package } from "../../../shared/package"
 
 const mockCreate = vitest.fn()
 
@@ -59,6 +60,7 @@ describe("RequestyHandler", () => {
 			defaultHeaders: {
 				"HTTP-Referer": "https://github.com/idenworks/roo-code",
 				"X-Title": "Roo Code for Otto",
+				"User-Agent": `RooCode/${Package.version}`,
 			},
 		})
 	})
