@@ -353,6 +353,11 @@
 					"type": "string",
 					"default": "",
 					"description": "%settings.autoImportSettingsPath.description%"
+				},
+				"roo.tasks.showCostWidget": {
+					"type": "boolean",
+					"default": true,
+					"description": "Show/hide the cost widget in the task page header."
 				}
 			}
 		}
