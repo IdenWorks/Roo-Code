@@ -1422,9 +1422,7 @@ export class ClineProvider
 		const cwd = this.cwd
 
 		// Read VSCode configuration settings
-		const showCostWidget = vscode.workspace
-			.getConfiguration(Package.name)
-			.get<boolean>("roo.tasks.showCostWidget", true)
+		const showCostWidget = vscode.workspace.getConfiguration(Package.name).get<boolean>("showCostWidget", true)
 
 		// Check if there's a system prompt override for the current mode
 		const currentMode = mode ?? defaultModeSlug
