@@ -4,8 +4,6 @@ import React from "react"
 import { render, screen, fireEvent } from "@/utils/test-utils"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
-import type { ProviderSettings } from "@roo-code/types"
-
 import TaskHeader, { TaskHeaderProps } from "../TaskHeader"
 
 // Mock i18n
@@ -34,14 +32,15 @@ vi.mock("@vscode/webview-ui-toolkit/react", () => ({
 
 // Mock the ExtensionStateContext
 vi.mock("@src/context/ExtensionStateContext", () => ({
-	useExtensionState: () => ({
+	useExtensionState: vi.fn(() => ({
 		apiConfiguration: {
 			apiProvider: "anthropic",
-			apiKey: "test-api-key", // Add relevant fields
-			apiModelId: "claude-3-opus-20240229", // Add relevant fields
-		} as ProviderSettings, // Optional: Add type assertion if ProviderSettings is imported
+			apiKey: "test-api-key",
+			apiModelId: "claude-3-opus-20240229",
+		},
 		currentTaskItem: { id: "test-task-id" },
-	}),
+		showCostWidget: true,
+	})),
 }))
 
 describe("TaskHeader", () => {
@@ -66,7 +65,7 @@ describe("TaskHeader", () => {
 		)
 	}
 
-	it("should display cost when totalCost is greater than 0", () => {
+	it("should display cost when totalCost is greater than 0 and showCostWidget is true", () => {
 		renderTaskHeader()
 		expect(screen.getByText("$0.05")).toBeInTheDocument()
 	})
