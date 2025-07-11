@@ -50,7 +50,7 @@ const TaskHeader = ({
 	todos,
 }: TaskHeaderProps) => {
 	const { t } = useTranslation()
-	const { apiConfiguration, currentTaskItem } = useExtensionState()
+	const { apiConfiguration, currentTaskItem, showCostWidget } = useExtensionState()
 	const { id: modelId, info: model } = useSelectedModel(apiConfiguration)
 	const [isTaskExpanded, setIsTaskExpanded] = useState(false)
 
@@ -122,7 +122,7 @@ const TaskHeader = ({
 						/>
 						{condenseButton}
 						<ShareButton item={currentTaskItem} disabled={buttonsDisabled} />
-						{!!totalCost && <VSCodeBadge>${totalCost.toFixed(2)}</VSCodeBadge>}
+						{showCostWidget && !!totalCost && <VSCodeBadge>${totalCost.toFixed(2)}</VSCodeBadge>}
 					</div>
 				)}
 				{/* Expanded state: Show task text and images */}
@@ -185,7 +185,9 @@ const TaskHeader = ({
 										</span>
 									)}
 								</div>
-								{!totalCost && <TaskActions item={currentTaskItem} buttonsDisabled={buttonsDisabled} />}
+								{(!showCostWidget || !totalCost) && (
+									<TaskActions item={currentTaskItem} buttonsDisabled={buttonsDisabled} />
+								)}
 							</div>
 
 							{((typeof cacheReads === "number" && cacheReads > 0) ||
@@ -207,7 +209,7 @@ const TaskHeader = ({
 								</div>
 							)}
 
-							{!!totalCost && (
+							{showCostWidget && !!totalCost && (
 								<div className="flex justify-between items-center h-[20px]">
 									<div className="flex items-center gap-1">
 										<span className="font-bold">{t("chat:task.apiCost")}</span>

@@ -1421,6 +1421,9 @@ export class ClineProvider
 		const mergedAllowedCommands = this.mergeAllowedCommands(allowedCommands)
 		const cwd = this.cwd
 
+		// Read VSCode configuration settings
+		const showCostWidget = vscode.workspace.getConfiguration(Package.name).get<boolean>("showCostWidget", true)
+
 		// Check if there's a system prompt override for the current mode
 		const currentMode = mode ?? defaultModeSlug
 		const hasSystemPromptOverride = await this.hasFileBasedSystemPromptOverride(currentMode)
@@ -1526,6 +1529,7 @@ export class ClineProvider
 			hasOpenedModeSelector: this.getGlobalState("hasOpenedModeSelector") ?? false,
 			alwaysAllowFollowupQuestions: alwaysAllowFollowupQuestions ?? false,
 			followupAutoApproveTimeoutMs: followupAutoApproveTimeoutMs ?? 60000,
+			showCostWidget,
 		}
 	}
 

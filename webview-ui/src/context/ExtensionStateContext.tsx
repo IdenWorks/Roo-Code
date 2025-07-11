@@ -131,6 +131,7 @@ export interface ExtensionStateContextType extends ExtensionState {
 	routerModels?: RouterModels
 	alwaysAllowUpdateTodoList?: boolean
 	setAlwaysAllowUpdateTodoList: (value: boolean) => void
+	showCostWidget?: boolean
 }
 
 export const ExtensionStateContext = createContext<ExtensionStateContextType | undefined>(undefined)
